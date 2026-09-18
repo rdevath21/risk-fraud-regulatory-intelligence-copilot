@@ -189,7 +189,8 @@ Be specific, cite transaction IDs and amounts, and reference the applicable regu
 
                     st.subheader("Evidence Report")
                     st.markdown(response)
-                    st.download_button("Download Report", response, file_name=f"evidence_{alert_id}.txt", mime="text/plain")
+                    with st.expander("Copy Full Report Text"):
+                        st.code(response, language=None)
 
     with tab_customer:
         customers = run_query("SELECT CUSTOMER_ID, FULL_NAME, COUNTRY, RISK_TIER FROM RISK_COPILOT.PUBLIC.CUSTOMERS ORDER BY CUSTOMER_ID")
@@ -322,7 +323,8 @@ elif page == "Audit Trail":
 
         # Export
         st.markdown("---")
-        csv = filtered_audit.to_csv(index=False)
-        st.download_button("Export Audit Log (CSV)", csv, file_name="copilot_audit_log.csv", mime="text/csv")
+        with st.expander("Export Audit Log (Copy CSV)"):
+            csv = filtered_audit.to_csv(index=False)
+            st.code(csv, language=None)
     else:
         st.info("No audit entries yet. Use the Investigation or Regulatory Chat pages to generate entries.")
