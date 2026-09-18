@@ -223,46 +223,16 @@ elif page == "Regulatory Chat":
 
     # Display chat history
     for msg in st.session_state.chat_history:
-        with st.chat_message(msg["role"]):
+        if msg["role"] == "user":
+            st.markdown(f"**You:** {msg['content']}")
+        else:
+            st.markdown(f"**Copilot:**")
             st.markdown(msg["content"])
             if msg.get("sources"):
                 with st.expander("Sources"):
                     for s in msg["sources"]:
                         st.caption(f"**{s['doc']}**: {s['text'][:200]}...")
-
-    # Chat input
-    user_input = st.chat_input("Ask about regulations, policies, or compliance requirements...")
-    if user_input:
-        st.session_state.chat_history.append({"role": "user", "content": user_input})
-        with st.chat_message("user"):
-            st.markdown(user_input)
-
-        with st.chat_message("assistant"):
-            with st.spinner("Searching regulatory corpus and generating answer..."):
-                # RAG retrieval
-                rag_results = search_regulatory_docs(user_input, limit=4)
-                rag_context = "\n\n---\n\n".join([f"[{r.get('DOC_NAME', 'Unknown')}]: {r.get('CHUNK_TEXT', '')}" for r in rag_results])
-                sources = [{"doc": r.get("DOC_NAME", "Unknown"), "text": r.get("CHUNK_TEXT", "")} for r in rag_results]
-
-                prompt = f"""You are a regulatory compliance expert assistant. Answer the user's question using ONLY the regulatory document excerpts provided below. If the answer is not found in the provided context, say so clearly.
-
-REGULATORY CONTEXT:
-{rag_context}
-
-USER QUESTION: {user_input}
-
-Provide a clear, structured answer. Cite the specific document name and section when referencing policies. If multiple documents are relevant, synthesize the information."""
-
-                response = call_llm(prompt)
-                log_audit("REGULATORY_CHAT", None, user_input, rag_context[:4000], response[:8000])
-
-                st.markdown(response)
-                if sources:
-                    with st.expander("Sources"):
-                        for s in sources:
-                            st.caption(f"**{s['doc']}**: {s['text'][:200]}...")
-
-                st.session_state.chat_history.append({"role": "assistant", "content": response, "sources": sources})
+        st.markdown("---")
 
     # Suggested questions
     if not st.session_state.chat_history:
@@ -279,8 +249,43 @@ Provide a clear, structured answer. Cite the specific document name and section 
         for i, q in enumerate(suggestions):
             with cols[i % 2]:
                 if st.button(q, key=f"suggestion_{i}"):
-                    st.session_state.chat_history.append({"role": "user", "content": q})
-                    st.rerun()
+                    st.session_state["pending_question"] = q
+                    st.experimental_rerun()
+
+    # Chat input
+    user_input = st.text_input("Ask about regulations, policies, or compliance requirements...", key="chat_input")
+    pending = st.session_state.pop("pending_question", None)
+    query = pending or user_input
+
+    if query:
+        st.session_state.chat_history.append({"role": "user", "content": query})
+        st.markdown(f"**You:** {query}")
+
+        with st.spinner("Searching regulatory corpus and generating answer..."):
+            rag_results = search_regulatory_docs(query, limit=4)
+            rag_context = "\n\n---\n\n".join([f"[{r.get('DOC_NAME', 'Unknown')}]: {r.get('CHUNK_TEXT', '')}" for r in rag_results])
+            sources = [{"doc": r.get("DOC_NAME", "Unknown"), "text": r.get("CHUNK_TEXT", "")} for r in rag_results]
+
+            prompt = f"""You are a regulatory compliance expert assistant. Answer the user's question using ONLY the regulatory document excerpts provided below. If the answer is not found in the provided context, say so clearly.
+
+REGULATORY CONTEXT:
+{rag_context}
+
+USER QUESTION: {query}
+
+Provide a clear, structured answer. Cite the specific document name and section when referencing policies. If multiple documents are relevant, synthesize the information."""
+
+            response = call_llm(prompt)
+            log_audit("REGULATORY_CHAT", None, query, rag_context[:4000], response[:8000])
+
+            st.markdown("**Copilot:**")
+            st.markdown(response)
+            if sources:
+                with st.expander("Sources"):
+                    for s in sources:
+                        st.caption(f"**{s['doc']}**: {s['text'][:200]}...")
+
+            st.session_state.chat_history.append({"role": "assistant", "content": response, "sources": sources})
 
 
 # ══════════════════════════════════════════════════════════════
