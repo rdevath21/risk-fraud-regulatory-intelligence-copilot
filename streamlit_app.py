@@ -83,18 +83,7 @@ if page == "Dashboard":
     st.subheader(f"Alerts ({len(filtered)})")
     if len(filtered) > 0:
         display_df = filtered[["ALERT_ID", "CUSTOMER_ID", "ALERT_TYPE", "SEVERITY", "STATUS", "ASSIGNED_TO", "CREATED_AT"]].copy()
-        st.dataframe(
-            display_df.style.apply(
-                lambda row: [
-                    "background-color: #ffcccc" if row["SEVERITY"] == "CRITICAL"
-                    else "background-color: #ffe0b2" if row["SEVERITY"] == "HIGH"
-                    else "background-color: #fff9c4" if row["SEVERITY"] == "MEDIUM"
-                    else ""
-                ] * len(row), axis=1
-            ),
-            use_container_width=True,
-            hide_index=True,
-        )
+        st.dataframe(display_df, use_container_width=True)
     else:
         st.info("No alerts match the current filters.")
 
@@ -133,7 +122,7 @@ elif page == "Investigation":
             cust_id = alert_row["CUSTOMER_ID"]
             txns = run_query(f"SELECT * FROM RISK_COPILOT.PUBLIC.TRANSACTIONS WHERE CUSTOMER_ID = '{cust_id}' ORDER BY TXN_DATE DESC")
             st.subheader(f"Transactions for {cust_id}")
-            st.dataframe(txns, use_container_width=True, hide_index=True)
+            st.dataframe(txns, use_container_width=True)
 
             # Customer profile
             cust = run_query(f"SELECT * FROM RISK_COPILOT.PUBLIC.CUSTOMERS WHERE CUSTOMER_ID = '{cust_id}'")
@@ -211,7 +200,7 @@ Be specific, cite transaction IDs and amounts, and reference the applicable regu
         txns = run_query(f"SELECT * FROM RISK_COPILOT.PUBLIC.TRANSACTIONS WHERE CUSTOMER_ID = '{cust_id}' ORDER BY TXN_DATE DESC")
         st.subheader(f"Transaction History ({len(txns)} transactions)")
         if len(txns) > 0:
-            st.dataframe(txns, use_container_width=True, hide_index=True)
+            st.dataframe(txns, use_container_width=True)
 
             # Transaction volume chart
             txns["TXN_DAY"] = pd.to_datetime(txns["TXN_DATE"]).dt.date
@@ -316,7 +305,6 @@ elif page == "Audit Trail":
         st.dataframe(
             filtered_audit[["LOG_ID", "ACTION_TYPE", "ALERT_ID", "USER_QUERY", "CREATED_AT", "CREATED_BY"]],
             use_container_width=True,
-            hide_index=True,
         )
 
         # Detail view
