@@ -28,7 +28,7 @@ def search_regulatory_docs(query, limit=3):
         return body.get("results", [])
     return []
 
-def call_llm(prompt, model="mistral-large2"):
+def call_llm(prompt, model="llama3.1-70b"):
     escaped = prompt.replace("'", "''")
     result = run_query(f"SELECT SNOWFLAKE.CORTEX.COMPLETE('{model}', '{escaped}') AS RESPONSE")
     return result["RESPONSE"].iloc[0] if len(result) > 0 else "Error generating response."
