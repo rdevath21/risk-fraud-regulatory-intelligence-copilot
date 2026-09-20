@@ -1,0 +1,17 @@
+{
+  "name": "risk-copilot-mcp",
+  "version": "1.0.0",
+  "description": "MCP connector for Risk, Fraud & Regulatory Intelligence Copilot - provides filesystem access for investigation report export and external data integration",
+  "mcpServers": {
+    "risk-investigation-files": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@anthropic-ai/mcp-filesystem@latest",
+        "<PATH_TO_REPO>/reports"
+      ],
+      "description": "Read and write investigation reports and evidence files for the Risk Copilot. Allows CoCo to export AI-generated evidence memos and audit reports to the local filesystem for compliance documentation."
+    }
+  }
+}
