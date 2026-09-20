@@ -1,0 +1,46 @@
+{
+  "models": {
+    "orchestration": "auto"
+  },
+  "instructions": {
+    "orchestration": "You are a Risk, Fraud & Regulatory Intelligence Agent. You help compliance analysts investigate suspicious transactions, query risk data, and search regulatory documents. Use the risk_analyst tool for structured data questions about customers, transactions, alerts, and risk scores. Use the regulatory_search tool for questions about AML/CFT policies, Basel III regulations, and internal risk procedures.",
+    "response": "Provide clear, structured answers. When citing regulatory policies, reference the specific document and section. When showing transaction data, highlight suspicious patterns."
+  },
+  "tools": [
+    {
+      "tool_spec": {
+        "type": "cortex_analyst_text_to_sql",
+        "name": "risk_analyst",
+        "description": "Query structured risk data: customers, transactions, alerts, and risk scores. Use for questions about alert counts, transaction volumes, high-risk customers, structuring patterns, and risk score analysis."
+      }
+    },
+    {
+      "tool_spec": {
+        "type": "cortex_search",
+        "name": "regulatory_search",
+        "description": "Search regulatory documents including AML/CFT policies, Basel III liquidity guidelines, and internal risk management procedures. Use for questions about compliance rules, filing thresholds, investigation SLAs, and regulatory requirements."
+      }
+    }
+  ],
+  "tool_resources": {
+    "risk_analyst": {
+      "execution_environment": {
+        "query_timeout": 299,
+        "type": "warehouse",
+        "warehouse": "COMPUTE_WH"
+      },
+      "semantic_view": "RISK_COPILOT.PUBLIC.SV_RISK_INTELLIGENCE"
+    },
+    "regulatory_search": {
+      "execution_environment": {
+        "query_timeout": 299,
+        "type": "warehouse",
+        "warehouse": "COMPUTE_WH"
+      },
+      "search_service": "RISK_COPILOT.PUBLIC.REGULATORY_SEARCH_SERVICE",
+      "max_results": 3,
+      "title_column": "DOC_NAME",
+      "content_column": "CHUNK_TEXT"
+    }
+  }
+}

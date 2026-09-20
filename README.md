@@ -121,6 +121,55 @@ Complete log of all AI interactions -- query, RAG context, LLM response, timesta
 
 ---
 
+## Multi-Surface: Agent + MCP Server
+
+The solution works across **5 surfaces** through a single Cortex Agent + MCP Server:
+
+```
+                    RISK_INTELLIGENCE_AGENT
+                    (Cortex Agent)
+                    |
+                    |-- tool: risk_analyst (Semantic View - structured data)
+                    |-- tool: regulatory_search (Cortex Search - RAG docs)
+                    |
+         +----------+----------+----------+----------+
+         |          |          |          |          |
+         v          v          v          v          v
+   Snowsight    CoCo       CoCo CLI   MCP Server  Streamlit
+   Cloud Agent  Desktop    (cortex)   (Claude,     App
+   (UI chat)    (IDE)      (terminal) ChatGPT,     (custom UI)
+                                       Cursor,
+                                       Slack)
+```
+
+### Surface 1: Snowsight (Cloud Agents)
+Navigate to **Snowsight > AI & ML > Cortex Agents > RISK_INTELLIGENCE_AGENT** and chat directly.
+
+### Surface 2: CoCo Desktop
+The agent is available in this IDE. Ask questions about risk data or regulatory policies.
+
+### Surface 3: CoCo CLI
+```bash
+cortex agent chat RISK_COPILOT.PUBLIC.RISK_INTELLIGENCE_AGENT
+```
+
+### Surface 4: MCP Server (Claude, ChatGPT, Cursor, Slack)
+The Snowflake-managed MCP server exposes the agent to any MCP-compatible client:
+
+```
+MCP Server URL:
+https://<account_url>/api/v2/databases/RISK_COPILOT/schemas/PUBLIC/mcp-servers/RISK_COPILOT_MCP_SERVER
+```
+
+**Connect from Claude.ai:** Settings > Connectors > Add Custom > paste the URL + OAuth credentials.
+
+**Connect from Slack:** Use Snowflake's Slack integration to surface the agent in a Slack channel.
+
+### Surface 5: Streamlit App
+The `RISK_FRAUD_COPILOT` Streamlit app provides the richest experience with dashboard, investigation, chat, and audit trail.
+
+---
+
 ## Data Pipeline & Automation
 
 ```
@@ -212,12 +261,16 @@ risk-fraud-regulatory-intelligence-copilot/
 |   |   |-- 04_risk_detection.sql      #   4 detection views + audit log table
 |   |   |-- 06_pipeline_automation.sql #   Stream, dynamic table, 2 scheduled tasks
 |   |   |-- 07_semantic_view.sql       #   Semantic view with verified queries
+|   |   |-- 09_agent_mcp.sql          #   Cortex Agent + MCP Server
 |   |
 |   |-- governance/                    # Governance layer
 |   |   |-- 05_governance.sql          #   RBAC roles, PII tags, masking policies
 |   |
 |   |-- tests/                         # Validation
 |       |-- 08_validation_tests.sql    #   8 automated correctness tests
+|
+|-- agent/
+|   |-- agent_spec.json               # Cortex Agent specification (JSON)
 |
 |-- mcp/                               # MCP connector
 |   |-- plugin.json                    #   CoCo Desktop plugin for filesystem export
@@ -286,7 +339,8 @@ Open: **Snowsight > Projects > Streamlit > RISK_FRAUD_COPILOT**
 | Semantic model authoring | Semantic view with entities, relationships, metrics, verified queries |
 | Streamlit app generation | 4-page SiS app with RAG chat and AI evidence generation |
 | Document processing | Regulatory corpus parsed, chunked, embedded, indexed in Cortex Search |
-| MCP connectors | Filesystem plugin for cross-tool evidence report export |
+| MCP connectors | Snowflake-managed MCP server + local filesystem plugin for cross-tool integration |
+| Multi-surface | Same agent accessible via Snowsight, CoCo Desktop, CoCo CLI, MCP clients (Claude/ChatGPT/Slack) |
 | Automations | 15-min alert detection + daily risk refresh, both running unattended |
 | Testing & validation | 8 automated tests covering every layer of the solution |
 | Guardrails & fallback | PII masking, RBAC, audit logging, RAG-grounded answers with citations |
@@ -313,6 +367,8 @@ Open: **Snowsight > Projects > Streamlit > RISK_FRAUD_COPILOT**
 | `V_VELOCITY_ANOMALIES` | View | Velocity spike detection |
 | `V_HIGH_RISK_JURISDICTIONS` | View | High-risk jurisdiction monitoring |
 | `V_DORMANT_REACTIVATION` | View | Dormant account detection |
+| `RISK_INTELLIGENCE_AGENT` | Cortex Agent | Multi-surface AI agent |
+| `RISK_COPILOT_MCP_SERVER` | MCP Server | Exposes agent to external clients |
 | `PII_MASK` | Masking Policy | Protects customer PII |
 | `RISK_ANALYST` | Role | Investigation access |
 | `RISK_AUDITOR` | Role | Read-only audit access |
