@@ -1,0 +1,17 @@
+{
+  "name": "risk-fraud-copilot",
+  "version": "1.0.0",
+  "description": "Risk, Fraud & Regulatory Intelligence Copilot skill for CoCo. Deploys a complete AML/fraud detection platform with synthetic data, RAG pipeline, detection views, Cortex Agent, and Streamlit app on Snowflake.",
+  "skills": [
+    {
+      "name": "risk-copilot-deploy",
+      "description": "Deploy the complete Risk, Fraud & Regulatory Intelligence Copilot to your Snowflake account. Creates synthetic AML data, RAG pipeline over regulatory documents, fraud detection views, scheduled automation, semantic view, Cortex Agent, and a 4-page Streamlit app.",
+      "path": "skills/risk-copilot-deploy.md"
+    },
+    {
+      "name": "risk-copilot-investigate",
+      "description": "Investigate a customer or alert using the Risk Copilot. Queries transaction data, retrieves regulatory context via RAG, and generates an AI-powered evidence report with citations.",
+      "path": "skills/risk-copilot-investigate.md"
+    }
+  ]
+}

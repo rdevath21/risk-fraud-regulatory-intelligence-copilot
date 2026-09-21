@@ -269,6 +269,13 @@ risk-fraud-regulatory-intelligence-copilot/
 |   |-- tests/                         # Validation
 |       |-- 08_validation_tests.sql    #   8 automated correctness tests
 |
+|-- skill/                             # Reusable CoCo skill (plugin)
+|   |-- .cortex-plugin/
+|   |   |-- plugin.json                #   Plugin manifest with 2 skills
+|   |-- skills/
+|   |   |-- risk-copilot-deploy.md     #   Full deployment skill
+|   |   |-- risk-copilot-investigate.md #   Investigation skill
+|
 |-- agent/
 |   |-- agent_spec.json               # Cortex Agent specification (JSON)
 |
@@ -281,6 +288,28 @@ risk-fraud-regulatory-intelligence-copilot/
 |-- .gitignore
 |-- README.md
 ```
+
+---
+
+## Reusable CoCo Skill
+
+The `skill/` directory contains a **reusable, shareable CoCo plugin** with two skills:
+
+| Skill | Command | What It Does |
+|-------|---------|-------------|
+| `risk-copilot-deploy` | `/risk-copilot-deploy` | Deploys the entire copilot to any Snowflake account end-to-end |
+| `risk-copilot-investigate` | `/risk-copilot-investigate` | Investigates an alert or customer with AI-powered evidence generation |
+
+**Install in CoCo Desktop:**
+```bash
+# Copy the skill directory to the CoCo plugins folder
+cp -r skill/ ~/.snowflake/cortex/plugins/risk-fraud-copilot/
+# Rename .cortex-plugin contents
+mv ~/.snowflake/cortex/plugins/risk-fraud-copilot/skill/.cortex-plugin ~/.snowflake/cortex/plugins/risk-fraud-copilot/.cortex-plugin
+# Restart CoCo Desktop
+```
+
+After installing, any CoCo user can type `/risk-copilot-deploy` to deploy the full solution or `/risk-copilot-investigate` to run an investigation.
 
 ---
 
