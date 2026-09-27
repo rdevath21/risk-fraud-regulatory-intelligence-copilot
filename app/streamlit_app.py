@@ -172,10 +172,10 @@ st.sidebar.markdown("---")
 try:
     sidebar_stats = run_query("""
         SELECT
-            (SELECT COUNT(*) FROM RISK_COPILOT.PUBLIC.CUSTOMERS) AS TOTAL_CUSTOMERS,
-            (SELECT COUNT(*) FROM RISK_COPILOT.PUBLIC.TRANSACTIONS) AS TOTAL_TXNS,
-            (SELECT COUNT(*) FROM RISK_COPILOT.PUBLIC.ALERTS WHERE STATUS IN ('OPEN','INVESTIGATING')) AS OPEN_ALERTS,
-            (SELECT SUM(AMOUNT) FROM RISK_COPILOT.PUBLIC.TRANSACTIONS) AS TOTAL_VOLUME
+            (SELECT COUNT(*) FROM RISK_COPILOT.TRANSFORM.DT_CUSTOMERS) AS TOTAL_CUSTOMERS,
+            (SELECT COUNT(*) FROM RISK_COPILOT.TRANSFORM.DT_TRANSACTIONS) AS TOTAL_TXNS,
+            (SELECT COUNT(*) FROM RISK_COPILOT.TRANSFORM.DT_ALERT_ENRICHED WHERE STATUS IN ('OPEN','INVESTIGATING')) AS OPEN_ALERTS,
+            (SELECT SUM(AMOUNT) FROM RISK_COPILOT.TRANSFORM.DT_TRANSACTIONS) AS TOTAL_VOLUME
     """)
     total_cust = int(sidebar_stats["TOTAL_CUSTOMERS"].iloc[0])
     total_txns = int(sidebar_stats["TOTAL_TXNS"].iloc[0])
@@ -201,7 +201,7 @@ page = st.sidebar.radio(
 
 st.sidebar.markdown("---")
 st.sidebar.caption(f"v1.2.0 | Cortex AI")
-st.sidebar.caption(f"RISK_COPILOT.PUBLIC")
+st.sidebar.caption(f"RAW -> TRANSFORM -> SEMANTIC")
 
 
 # ══════════════════════════════════════════════════════════════
@@ -212,7 +212,7 @@ if page == "Dashboard":
     st.caption("Real-time overview of alerts, risk scores, and detection coverage across the platform.")
 
     # Load data
-    alerts_df = run_query("SELECT * FROM RISK_COPILOT.PUBLIC.ALERTS")
+    alerts_df = run_query("SELECT * FROM RISK_COPILOT.TRANSFORM.DT_ALERT_ENRICHED")
     open_count = len(alerts_df[alerts_df["STATUS"].isin(["OPEN", "INVESTIGATING"])])
     critical_count = len(alerts_df[(alerts_df["SEVERITY"] == "CRITICAL") & (alerts_df["STATUS"] != "CLOSED")])
     high_count = len(alerts_df[(alerts_df["SEVERITY"] == "HIGH") & (alerts_df["STATUS"] != "CLOSED")])
@@ -270,7 +270,7 @@ if page == "Dashboard":
     with right_col:
         # Risk score distribution
         st.markdown('<div class="section-header"><h3>Top Risk Scores</h3></div>', unsafe_allow_html=True)
-        risk_df = run_query("SELECT CUSTOMER_ID, COMPOSITE_SCORE, RISK_CATEGORY FROM RISK_COPILOT.PUBLIC.RISK_SCORES ORDER BY COMPOSITE_SCORE DESC")
+        risk_df = run_query("SELECT CUSTOMER_ID, COMPOSITE_SCORE, RISK_CATEGORY FROM RISK_COPILOT.TRANSFORM.DT_RISK_ENRICHED ORDER BY COMPOSITE_SCORE DESC")
         top_risk = risk_df.head(10)
         st.bar_chart(top_risk.set_index("CUSTOMER_ID")["COMPOSITE_SCORE"])
 
@@ -287,10 +287,10 @@ if page == "Dashboard":
     with det_col:
         st.markdown('<div class="section-header"><h3>Detection Coverage</h3></div>', unsafe_allow_html=True)
         det_data = {
-            "Structuring": run_query_safe("SELECT COUNT(*) AS C FROM RISK_COPILOT.PUBLIC.V_STRUCTURING_ALERTS", pd.DataFrame({"C": [0]}))["C"].iloc[0],
-            "Velocity Anomalies": run_query_safe("SELECT COUNT(*) AS C FROM RISK_COPILOT.PUBLIC.V_VELOCITY_ANOMALIES", pd.DataFrame({"C": [0]}))["C"].iloc[0],
-            "High-Risk Jurisdictions": run_query_safe("SELECT COUNT(*) AS C FROM RISK_COPILOT.PUBLIC.V_HIGH_RISK_JURISDICTIONS", pd.DataFrame({"C": [0]}))["C"].iloc[0],
-            "Dormant Reactivation": run_query_safe("SELECT COUNT(*) AS C FROM RISK_COPILOT.PUBLIC.V_DORMANT_REACTIVATION", pd.DataFrame({"C": [0]}))["C"].iloc[0],
+            "Structuring": run_query_safe("SELECT COUNT(*) AS C FROM RISK_COPILOT.TRANSFORM.DT_SUSPICIOUS_PATTERNS WHERE PATTERN_TYPE='STRUCTURING'", pd.DataFrame({"C": [0]}))["C"].iloc[0],
+            "Velocity Anomalies": run_query_safe("SELECT COUNT(*) AS C FROM RISK_COPILOT.TRANSFORM.DT_SUSPICIOUS_PATTERNS WHERE PATTERN_TYPE='VELOCITY_ANOMALY'", pd.DataFrame({"C": [0]}))["C"].iloc[0],
+            "High-Risk Jurisdictions": run_query_safe("SELECT COUNT(*) AS C FROM RISK_COPILOT.TRANSFORM.DT_SUSPICIOUS_PATTERNS WHERE PATTERN_TYPE='HIGH_RISK_DESTINATION'", pd.DataFrame({"C": [0]}))["C"].iloc[0],
+            "Dormant Reactivation": run_query_safe("SELECT COUNT(*) AS C FROM RISK_COPILOT.TRANSFORM.DT_SUSPICIOUS_PATTERNS WHERE PATTERN_TYPE='DORMANT_REACTIVATION'", pd.DataFrame({"C": [0]}))["C"].iloc[0],
         }
         for det_name, det_count in det_data.items():
             color = "#e53e3e" if int(det_count) > 0 else "#38a169"
@@ -306,7 +306,7 @@ if page == "Dashboard":
 
     with vol_col:
         st.markdown('<div class="section-header"><h3>Transaction Volume Over Time</h3></div>', unsafe_allow_html=True)
-        txn_vol = run_query("SELECT TXN_DATE::DATE AS TXN_DAY, SUM(AMOUNT) AS DAILY_VOLUME, COUNT(*) AS TXN_COUNT FROM RISK_COPILOT.PUBLIC.TRANSACTIONS GROUP BY TXN_DAY ORDER BY TXN_DAY")
+        txn_vol = run_query("SELECT TXN_DAY, SUM(AMOUNT) AS DAILY_VOLUME, COUNT(*) AS TXN_COUNT FROM RISK_COPILOT.TRANSFORM.DT_TRANSACTIONS GROUP BY TXN_DAY ORDER BY TXN_DAY")
         if len(txn_vol) > 0:
             txn_vol["TXN_DAY"] = pd.to_datetime(txn_vol["TXN_DAY"])
             st.line_chart(txn_vol.set_index("TXN_DAY")["DAILY_VOLUME"])
@@ -342,7 +342,7 @@ elif page == "Investigation":
     tab_alert, tab_customer = st.tabs(["Investigate Alert", "Investigate Customer"])
 
     with tab_alert:
-        alerts_df = run_query("SELECT ALERT_ID, CUSTOMER_ID, ALERT_TYPE, SEVERITY, STATUS, DESCRIPTION FROM RISK_COPILOT.PUBLIC.ALERTS WHERE STATUS != 'CLOSED' ORDER BY CASE SEVERITY WHEN 'CRITICAL' THEN 1 WHEN 'HIGH' THEN 2 WHEN 'MEDIUM' THEN 3 ELSE 4 END")
+        alerts_df = run_query("SELECT ALERT_ID, CUSTOMER_ID, ALERT_TYPE, SEVERITY, STATUS, DESCRIPTION FROM RISK_COPILOT.TRANSFORM.DT_ALERT_ENRICHED WHERE STATUS != 'CLOSED' ORDER BY CASE SEVERITY WHEN 'CRITICAL' THEN 1 WHEN 'HIGH' THEN 2 WHEN 'MEDIUM' THEN 3 ELSE 4 END")
         if len(alerts_df) > 0:
             alert_options = alerts_df.apply(lambda r: f"{r['ALERT_ID']} | {r['ALERT_TYPE']} | {r['SEVERITY']} | {r['CUSTOMER_ID']}", axis=1).tolist()
             selected_alert = st.selectbox("Select Alert to Investigate", alert_options)
@@ -366,8 +366,8 @@ elif page == "Investigation":
 
             # Customer profile + Risk scores side by side
             cust_id = alert_row["CUSTOMER_ID"]
-            cust = run_query(f"SELECT * FROM RISK_COPILOT.PUBLIC.CUSTOMERS WHERE CUSTOMER_ID = '{cust_id}'")
-            risk = run_query(f"SELECT * FROM RISK_COPILOT.PUBLIC.RISK_SCORES WHERE CUSTOMER_ID = '{cust_id}'")
+            cust = run_query(f"SELECT * FROM RISK_COPILOT.TRANSFORM.DT_CUSTOMERS WHERE CUSTOMER_ID = '{cust_id}'")
+            risk = run_query(f"SELECT * FROM RISK_COPILOT.TRANSFORM.DT_RISK_ENRICHED WHERE CUSTOMER_ID = '{cust_id}'")
 
             prof_col, risk_col = st.columns(2)
             with prof_col:
@@ -410,7 +410,7 @@ elif page == "Investigation":
 
             # Transaction timeline
             st.markdown('<div class="section-header"><h3>Transaction Timeline</h3></div>', unsafe_allow_html=True)
-            txns = run_query(f"SELECT * FROM RISK_COPILOT.PUBLIC.TRANSACTIONS WHERE CUSTOMER_ID = '{cust_id}' ORDER BY TXN_DATE DESC")
+            txns = run_query(f"SELECT * FROM RISK_COPILOT.TRANSFORM.DT_TRANSACTIONS WHERE CUSTOMER_ID = '{cust_id}' ORDER BY TXN_DATE DESC")
 
             if len(txns) > 0:
                 # Summary metrics for transactions
@@ -420,7 +420,7 @@ elif page == "Investigation":
                 tc3.metric("Avg Amount", f"${txns['AMOUNT'].mean():,.0f}")
                 tc4.metric("Max Amount", f"${txns['AMOUNT'].max():,.0f}")
 
-                st.dataframe(txns[["TXN_ID", "TXN_DATE", "TXN_TYPE", "AMOUNT", "CURRENCY", "COUNTERPARTY", "CHANNEL", "COUNTRY"]], use_container_width=True)
+                st.dataframe(txns[["TXN_ID", "TXN_DATE", "TXN_TYPE", "AMOUNT", "CURRENCY", "COUNTERPARTY", "CHANNEL", "COUNTERPARTY_COUNTRY"]], use_container_width=True)
 
                 # Volume chart
                 txns["TXN_DAY"] = pd.to_datetime(txns["TXN_DATE"]).dt.date
@@ -472,27 +472,27 @@ Be specific with transaction IDs, amounts, and regulatory citations."""
 
             with act2:
                 if st.button("Escalate to CRITICAL"):
-                    session.sql(f"UPDATE RISK_COPILOT.PUBLIC.ALERTS SET SEVERITY = 'CRITICAL', STATUS = 'INVESTIGATING' WHERE ALERT_ID = '{alert_id}'").collect()
+                    session.sql(f"UPDATE RISK_COPILOT.RAW.RAW_ALERTS SET SEVERITY = 'CRITICAL', STATUS = 'INVESTIGATING' WHERE ALERT_ID = '{alert_id}'").collect()
                     st.success(f"Alert {alert_id} escalated to CRITICAL.")
                     st.experimental_rerun()
 
             with act3:
                 if st.button("Close Alert"):
-                    session.sql(f"UPDATE RISK_COPILOT.PUBLIC.ALERTS SET STATUS = 'CLOSED' WHERE ALERT_ID = '{alert_id}'").collect()
+                    session.sql(f"UPDATE RISK_COPILOT.RAW.RAW_ALERTS SET STATUS = 'CLOSED' WHERE ALERT_ID = '{alert_id}'").collect()
                     st.success(f"Alert {alert_id} closed.")
                     st.experimental_rerun()
         else:
             st.info("No open alerts to investigate. All alerts are closed.")
 
     with tab_customer:
-        customers = run_query("SELECT CUSTOMER_ID, FULL_NAME, COUNTRY, RISK_TIER FROM RISK_COPILOT.PUBLIC.CUSTOMERS ORDER BY CUSTOMER_ID")
+        customers = run_query("SELECT CUSTOMER_ID, FULL_NAME, COUNTRY, RISK_TIER FROM RISK_COPILOT.TRANSFORM.DT_CUSTOMERS ORDER BY CUSTOMER_ID")
         cust_options = customers.apply(lambda r: f"{r['CUSTOMER_ID']} | {r['FULL_NAME']} | {r['RISK_TIER']}", axis=1).tolist()
         selected_cust = st.selectbox("Select Customer", cust_options)
         cust_id = selected_cust.split(" | ")[0]
 
         # Customer risk card
-        cust_detail = run_query(f"SELECT * FROM RISK_COPILOT.PUBLIC.CUSTOMERS WHERE CUSTOMER_ID = '{cust_id}'")
-        cust_risk = run_query_safe(f"SELECT * FROM RISK_COPILOT.PUBLIC.RISK_SCORES WHERE CUSTOMER_ID = '{cust_id}'")
+        cust_detail = run_query(f"SELECT * FROM RISK_COPILOT.TRANSFORM.DT_CUSTOMERS WHERE CUSTOMER_ID = '{cust_id}'")
+        cust_risk = run_query_safe(f"SELECT * FROM RISK_COPILOT.TRANSFORM.DT_RISK_ENRICHED WHERE CUSTOMER_ID = '{cust_id}'")
 
         if len(cust_detail) > 0:
             cr = cust_detail.iloc[0]
@@ -525,7 +525,7 @@ Be specific with transaction IDs, amounts, and regulatory citations."""
                     """, unsafe_allow_html=True)
 
         # Transactions
-        txns = run_query(f"SELECT * FROM RISK_COPILOT.PUBLIC.TRANSACTIONS WHERE CUSTOMER_ID = '{cust_id}' ORDER BY TXN_DATE DESC")
+        txns = run_query(f"SELECT * FROM RISK_COPILOT.TRANSFORM.DT_TRANSACTIONS WHERE CUSTOMER_ID = '{cust_id}' ORDER BY TXN_DATE DESC")
         st.markdown(f'<div class="section-header"><h3>Transaction History ({len(txns)} transactions)</h3></div>', unsafe_allow_html=True)
         if len(txns) > 0:
             tc1, tc2, tc3 = st.columns(3)
@@ -542,7 +542,7 @@ Be specific with transaction IDs, amounts, and regulatory citations."""
             st.info("No transactions found for this customer.")
 
         # Customer alerts
-        cust_alerts = run_query_safe(f"SELECT * FROM RISK_COPILOT.PUBLIC.ALERTS WHERE CUSTOMER_ID = '{cust_id}'")
+        cust_alerts = run_query_safe(f"SELECT * FROM RISK_COPILOT.TRANSFORM.DT_ALERT_ENRICHED WHERE CUSTOMER_ID = '{cust_id}'")
         if len(cust_alerts) > 0:
             st.markdown(f'<div class="section-header"><h3>Customer Alerts ({len(cust_alerts)})</h3></div>', unsafe_allow_html=True)
             for _, arow in cust_alerts.iterrows():
@@ -762,10 +762,10 @@ elif page == "System Health":
     # Object inventory
     st.markdown('<div class="section-header"><h3>Object Inventory</h3></div>', unsafe_allow_html=True)
     inv_data = {}
-    inv_data["Tables"] = run_query_safe("SELECT COUNT(*) AS C FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'PUBLIC' AND TABLE_TYPE = 'BASE TABLE'", pd.DataFrame({"C": [0]}))["C"].iloc[0]
-    inv_data["Views"] = run_query_safe("SELECT COUNT(*) AS C FROM INFORMATION_SCHEMA.VIEWS WHERE TABLE_SCHEMA = 'PUBLIC'", pd.DataFrame({"C": [0]}))["C"].iloc[0]
-    inv_data["Dynamic Tables"] = run_query_safe("SELECT COUNT(*) AS C FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'PUBLIC' AND TABLE_TYPE = 'DYNAMIC TABLE'", pd.DataFrame({"C": [0]}))["C"].iloc[0]
-    inv_data["Streams"] = run_query_safe("SELECT COUNT(*) AS C FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'PUBLIC' AND TABLE_TYPE LIKE '%STREAM%'", pd.DataFrame({"C": [0]}))["C"].iloc[0]
+    inv_data["Tables (RAW)"] = run_query_safe("SELECT COUNT(*) AS C FROM RISK_COPILOT.INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'RAW' AND TABLE_TYPE = 'BASE TABLE'", pd.DataFrame({"C": [0]}))["C"].iloc[0]
+    inv_data["Dynamic Tables"] = run_query_safe("SELECT COUNT(*) AS C FROM RISK_COPILOT.INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'TRANSFORM'", pd.DataFrame({"C": [0]}))["C"].iloc[0]
+    inv_data["Semantic Views"] = run_query_safe("SELECT COUNT(*) AS C FROM RISK_COPILOT.INFORMATION_SCHEMA.VIEWS WHERE TABLE_SCHEMA = 'SEMANTIC'", pd.DataFrame({"C": [0]}))["C"].iloc[0]
+    inv_data["Streams"] = run_query_safe("SELECT COUNT(*) AS C FROM RISK_COPILOT.INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'RAW' AND TABLE_TYPE LIKE '%STREAM%'", pd.DataFrame({"C": [0]}))["C"].iloc[0]
 
     inv_cols = st.columns(4)
     colors = ["kpi-blue", "kpi-purple", "kpi-green", "kpi-orange"]
@@ -777,7 +777,7 @@ elif page == "System Health":
 
     # Task history
     st.markdown('<div class="section-header"><h3>Scheduled Task Status</h3></div>', unsafe_allow_html=True)
-    task_names = ["TASK_AUTO_ALERT_DETECTION", "TASK_DAILY_RISK_REFRESH"]
+    task_names = ["TASK_DAILY_DATA_INGESTION", "TASK_AUTO_ALERT_DETECTION", "TASK_DAILY_RISK_REFRESH"]
     for tname in task_names:
         try:
             task_hist = run_query(f"SELECT NAME, STATE, SCHEDULED_TIME, COMPLETED_TIME, ERROR_MESSAGE FROM TABLE(INFORMATION_SCHEMA.TASK_HISTORY(TASK_NAME => '{tname}', RESULT_LIMIT => 3)) ORDER BY SCHEDULED_TIME DESC")
@@ -829,7 +829,7 @@ elif page == "System Health":
     # Dynamic table status
     st.markdown('<div class="section-header"><h3>Dynamic Table Freshness</h3></div>', unsafe_allow_html=True)
     try:
-        dt_info = run_query("SELECT COUNT(*) AS ROW_COUNT FROM RISK_COPILOT.PUBLIC.DT_CUSTOMER_RISK_SUMMARY")
+        dt_info = run_query("SELECT COUNT(*) AS ROW_COUNT FROM RISK_COPILOT.TRANSFORM.DT_CUSTOMER_RISK_SUMMARY")
         dt_rows = int(dt_info["ROW_COUNT"].iloc[0])
         st.markdown(f"""
         <div class="info-card">

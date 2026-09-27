@@ -5,21 +5,21 @@
 
 USE SCHEMA RISK_COPILOT.PUBLIC;
 
--- Cortex Agent: wraps semantic view (structured data) + search service (regulatory docs)
+-- Cortex Agent: wraps semantic view (SEMANTIC schema) + search service (regulatory docs)
 CREATE OR REPLACE AGENT RISK_INTELLIGENCE_AGENT
 FROM SPECIFICATION $$
 tools:
   - tool_spec:
       type: "cortex_analyst_text_to_sql"
       name: "risk_analyst"
-      description: "Query structured risk data including customers, transactions, alerts, and risk scores"
+      description: "Query structured risk data including customers, transactions, alerts, and risk scores from the TRANSFORM layer dynamic tables"
   - tool_spec:
       type: "cortex_search"
       name: "regulatory_search"
       description: "Search AML/CFT policies, Basel III regulations, and internal risk procedures"
 tool_resources:
   risk_analyst:
-    semantic_view: "RISK_COPILOT.PUBLIC.SV_RISK_INTELLIGENCE"
+    semantic_view: "RISK_COPILOT.SEMANTIC.SV_RISK_INTELLIGENCE"
   regulatory_search:
     search_service: "RISK_COPILOT.PUBLIC.REGULATORY_SEARCH_SERVICE"
     max_results: 3
