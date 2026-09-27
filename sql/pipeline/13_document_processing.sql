@@ -1,0 +1,147 @@
+-- ============================================================
+-- Risk, Fraud & Regulatory Intelligence Copilot
+-- Step 13: Document Processing Pipeline (AI_EXTRACT + AI_CLASSIFY)
+-- ============================================================
+-- Demonstrates Cortex AI document processing functions:
+--   AI_EXTRACT: Structured field extraction from unstructured text
+--   AI_CLASSIFY: Automatic document categorization
+--   Combined with structured data for enriched intelligence
+--
+-- This script creates NEW objects only - does not modify existing tables.
+
+USE SCHEMA RISK_COPILOT.PUBLIC;
+
+-- ── TABLE: Enriched regulatory chunks with AI-extracted metadata ──
+CREATE OR REPLACE TABLE REGULATORY_CHUNKS_ENRICHED (
+    CHUNK_ID INT,
+    DOC_NAME VARCHAR(100),
+    DOC_TYPE VARCHAR(50),
+    CHUNK_INDEX INT,
+    CHUNK_TEXT VARCHAR(4000),
+    -- AI_EXTRACT fields
+    EXTRACTED_FIELDS VARIANT,
+    SECTION_NUMBER VARCHAR(50),
+    SECTION_TITLE VARCHAR(200),
+    KEY_THRESHOLDS VARCHAR(500),
+    REGULATORY_REFERENCES VARCHAR(500),
+    -- AI_CLASSIFY fields
+    TOPIC_CLASSIFICATION VARCHAR(100),
+    RISK_RELEVANCE VARCHAR(50),
+    -- Metadata
+    PROCESSED_AT TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP()
+);
+
+-- ── STEP 1: AI_EXTRACT - Pull structured fields from each regulatory chunk ──
+INSERT INTO REGULATORY_CHUNKS_ENRICHED (
+    CHUNK_ID, DOC_NAME, DOC_TYPE, CHUNK_INDEX, CHUNK_TEXT,
+    EXTRACTED_FIELDS, SECTION_NUMBER, SECTION_TITLE, KEY_THRESHOLDS, REGULATORY_REFERENCES
+)
+SELECT
+    rc.CHUNK_ID,
+    rc.DOC_NAME,
+    rc.DOC_TYPE,
+    rc.CHUNK_INDEX,
+    rc.CHUNK_TEXT,
+    SNOWFLAKE.CORTEX.AI_EXTRACT(
+        rc.CHUNK_TEXT,
+        OBJECT_CONSTRUCT(
+            'section_number', 'The section number (e.g., Section 1, Section 2)',
+            'section_title', 'The title or topic of this section',
+            'key_thresholds', 'Any dollar amounts, percentages, time limits, or numeric thresholds mentioned',
+            'regulatory_references', 'Any regulatory body names, law citations, or standard references (e.g., FinCEN, BCBS 238, 31 USC 5324)'
+        )
+    ) AS EXTRACTED_FIELDS,
+    TO_JSON(SNOWFLAKE.CORTEX.AI_EXTRACT(rc.CHUNK_TEXT, OBJECT_CONSTRUCT('section_number','section number')))::VARIANT:response:section_number::VARCHAR AS SECTION_NUMBER,
+    TO_JSON(SNOWFLAKE.CORTEX.AI_EXTRACT(rc.CHUNK_TEXT, OBJECT_CONSTRUCT('section_title','section title or topic')))::VARIANT:response:section_title::VARCHAR AS SECTION_TITLE,
+    TO_JSON(SNOWFLAKE.CORTEX.AI_EXTRACT(rc.CHUNK_TEXT, OBJECT_CONSTRUCT('key_thresholds','dollar amounts, percentages, or time limits')))::VARIANT:response:key_thresholds::VARCHAR AS KEY_THRESHOLDS,
+    TO_JSON(SNOWFLAKE.CORTEX.AI_EXTRACT(rc.CHUNK_TEXT, OBJECT_CONSTRUCT('regulatory_references','regulatory body names or law citations')))::VARIANT:response:regulatory_references::VARCHAR AS REGULATORY_REFERENCES
+FROM REGULATORY_CHUNKS rc;
+
+-- ── STEP 2: AI_CLASSIFY - Categorize each chunk by topic and risk relevance ──
+UPDATE REGULATORY_CHUNKS_ENRICHED rce
+SET
+    TOPIC_CLASSIFICATION = PARSE_JSON(TO_JSON(
+        SNOWFLAKE.CORTEX.AI_CLASSIFY(
+            rce.CHUNK_TEXT,
+            ARRAY_CONSTRUCT('AML_COMPLIANCE', 'TRANSACTION_MONITORING', 'CUSTOMER_DUE_DILIGENCE', 
+                           'REGULATORY_REPORTING', 'RISK_GOVERNANCE', 'LIQUIDITY_MANAGEMENT',
+                           'INVESTIGATION_PROCEDURES', 'AI_GOVERNANCE')
+        )
+    )):labels[0]::VARCHAR,
+    RISK_RELEVANCE = PARSE_JSON(TO_JSON(
+        SNOWFLAKE.CORTEX.AI_CLASSIFY(
+            rce.CHUNK_TEXT,
+            ARRAY_CONSTRUCT('CRITICAL_FOR_INVESTIGATIONS', 'IMPORTANT_FOR_COMPLIANCE', 'BACKGROUND_REFERENCE')
+        )
+    )):labels[0]::VARCHAR;
+
+-- ── STEP 3: View combining AI-processed documents with alert data ──
+CREATE OR REPLACE VIEW V_ALERT_REGULATORY_CONTEXT AS
+SELECT
+    a.ALERT_ID,
+    a.ALERT_TYPE,
+    a.SEVERITY,
+    a.CUSTOMER_ID,
+    rce.DOC_NAME,
+    rce.SECTION_NUMBER,
+    rce.SECTION_TITLE,
+    rce.KEY_THRESHOLDS,
+    rce.REGULATORY_REFERENCES,
+    rce.TOPIC_CLASSIFICATION,
+    rce.RISK_RELEVANCE,
+    rce.CHUNK_TEXT AS REGULATORY_TEXT
+FROM RISK_COPILOT.RAW.RAW_ALERTS a
+CROSS JOIN REGULATORY_CHUNKS_ENRICHED rce
+WHERE
+    (a.ALERT_TYPE = 'STRUCTURING' AND rce.TOPIC_CLASSIFICATION IN ('AML_COMPLIANCE', 'TRANSACTION_MONITORING'))
+    OR (a.ALERT_TYPE = 'LAYERING' AND rce.TOPIC_CLASSIFICATION IN ('AML_COMPLIANCE', 'TRANSACTION_MONITORING'))
+    OR (a.ALERT_TYPE IN ('RAPID_INTERNATIONAL_TRANSFERS', 'ROUND_TRIPPING') AND rce.TOPIC_CLASSIFICATION = 'AML_COMPLIANCE')
+    OR (a.ALERT_TYPE = 'DORMANT_REACTIVATION' AND rce.TOPIC_CLASSIFICATION = 'TRANSACTION_MONITORING')
+    OR (a.ALERT_TYPE LIKE 'PEP%' AND rce.TOPIC_CLASSIFICATION = 'CUSTOMER_DUE_DILIGENCE')
+    OR (a.ALERT_TYPE = 'KYC_EXPIRED_ACTIVITY' AND rce.TOPIC_CLASSIFICATION = 'CUSTOMER_DUE_DILIGENCE')
+    OR (a.ALERT_TYPE = 'SHELL_COMPANY_ACTIVITY' AND rce.TOPIC_CLASSIFICATION IN ('AML_COMPLIANCE', 'INVESTIGATION_PROCEDURES'));
+
+-- ── STEP 4: AI_EXTRACT on alert descriptions for structured investigation fields ──
+CREATE OR REPLACE TABLE ALERTS_AI_EXTRACTED (
+    ALERT_ID VARCHAR(30),
+    ALERT_TYPE VARCHAR(40),
+    SEVERITY VARCHAR(10),
+    CUSTOMER_ID VARCHAR(20),
+    DESCRIPTION VARCHAR(500),
+    -- AI-extracted structured fields from free-text alert descriptions
+    EXTRACTED_TOTAL_AMOUNT VARCHAR(200),
+    EXTRACTED_COUNTRY_LIST VARCHAR(500),
+    EXTRACTED_PATTERN_TYPE VARCHAR(200),
+    EXTRACTED_TIME_WINDOW VARCHAR(200),
+    EXTRACTED_TXN_COUNT VARCHAR(100),
+    PROCESSED_AT TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP()
+);
+
+INSERT INTO ALERTS_AI_EXTRACTED (ALERT_ID, ALERT_TYPE, SEVERITY, CUSTOMER_ID, DESCRIPTION,
+    EXTRACTED_TOTAL_AMOUNT, EXTRACTED_COUNTRY_LIST, EXTRACTED_PATTERN_TYPE, EXTRACTED_TIME_WINDOW, EXTRACTED_TXN_COUNT)
+SELECT
+    a.ALERT_ID, a.ALERT_TYPE, a.SEVERITY, a.CUSTOMER_ID, a.DESCRIPTION,
+    PARSE_JSON(TO_JSON(SNOWFLAKE.CORTEX.AI_EXTRACT(a.DESCRIPTION,
+        OBJECT_CONSTRUCT('total_amount','total dollar amount involved')))):response:total_amount::VARCHAR,
+    PARSE_JSON(TO_JSON(SNOWFLAKE.CORTEX.AI_EXTRACT(a.DESCRIPTION,
+        OBJECT_CONSTRUCT('countries','list of countries mentioned')))):response:countries::VARCHAR,
+    PARSE_JSON(TO_JSON(SNOWFLAKE.CORTEX.AI_EXTRACT(a.DESCRIPTION,
+        OBJECT_CONSTRUCT('pattern','type of suspicious pattern detected')))):response:pattern::VARCHAR,
+    PARSE_JSON(TO_JSON(SNOWFLAKE.CORTEX.AI_EXTRACT(a.DESCRIPTION,
+        OBJECT_CONSTRUCT('time_window','time period over which activity occurred')))):response:time_window::VARCHAR,
+    PARSE_JSON(TO_JSON(SNOWFLAKE.CORTEX.AI_EXTRACT(a.DESCRIPTION,
+        OBJECT_CONSTRUCT('transaction_count','number of transactions involved')))):response:transaction_count::VARCHAR
+FROM RISK_COPILOT.RAW.RAW_ALERTS a;
+
+-- ── VALIDATION ──
+SELECT 'DOC_PROCESSING: AI_EXTRACT' AS TEST,
+    CASE WHEN COUNT(*) = 18 THEN 'PASS' ELSE 'FAIL' END AS RESULT
+FROM REGULATORY_CHUNKS_ENRICHED WHERE SECTION_TITLE IS NOT NULL;
+
+SELECT 'DOC_PROCESSING: AI_CLASSIFY' AS TEST,
+    CASE WHEN COUNT(*) = 18 THEN 'PASS' ELSE 'FAIL' END AS RESULT
+FROM REGULATORY_CHUNKS_ENRICHED WHERE TOPIC_CLASSIFICATION IS NOT NULL;
+
+SELECT 'DOC_PROCESSING: ALERT_EXTRACT' AS TEST,
+    CASE WHEN COUNT(*) = 10 THEN 'PASS' ELSE 'FAIL' END AS RESULT
+FROM ALERTS_AI_EXTRACTED WHERE EXTRACTED_PATTERN_TYPE IS NOT NULL;
