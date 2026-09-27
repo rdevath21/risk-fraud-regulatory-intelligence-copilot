@@ -89,6 +89,48 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
+# ── Guardrails ──
+
+BLOCKED_KEYWORDS = ["drop table", "delete from", "truncate", "drop database", "grant all",
+    "create user", "alter user", "drop role", "insert into", "update ", "merge into"]
+MAX_QUERY_LENGTH = 1000
+ALLOWED_TOPICS = ["risk", "fraud", "aml", "compliance", "transaction", "alert", "customer",
+    "regulatory", "sar", "ctr", "kyc", "pep", "basel", "investigation", "structuring",
+    "layering", "wire", "money laundering", "suspicious", "monitoring", "audit"]
+
+def validate_user_input(query):
+    if not query or not query.strip():
+        return False, "Please enter a question."
+    if len(query) > MAX_QUERY_LENGTH:
+        return False, f"Query too long ({len(query)} chars). Maximum is {MAX_QUERY_LENGTH} characters."
+    query_lower = query.lower()
+    for kw in BLOCKED_KEYWORDS:
+        if kw in query_lower:
+            return False, f"Blocked: query contains disallowed keyword '{kw}'. This copilot is read-only."
+    return True, ""
+
+def check_topic_relevance(query):
+    query_lower = query.lower()
+    if any(topic in query_lower for topic in ALLOWED_TOPICS):
+        return True
+    return False
+
+def validate_llm_output(response):
+    if not response or len(response.strip()) < 20:
+        return response, "LOW", "Response too short - may indicate an error."
+    response_lower = response.lower()
+    danger_phrases = ["i cannot", "i don't have", "no information", "not found in", "outside my"]
+    if any(p in response_lower for p in danger_phrases):
+        return response, "LOW", "Response indicates low confidence - regulatory corpus may not cover this topic."
+    citation_indicators = ["section", "policy", "regulation", "rule", "aml", "basel", "tm-", "bcbs"]
+    has_citations = sum(1 for c in citation_indicators if c in response_lower)
+    if has_citations >= 2:
+        return response, "HIGH", f"Response cites {has_citations} regulatory references."
+    elif has_citations == 1:
+        return response, "MEDIUM", "Response has limited regulatory citations."
+    return response, "LOW", "Response lacks regulatory citations - verify against source documents."
+
+
 # ── Helper functions ──
 
 def run_query(sql):
@@ -117,9 +159,12 @@ def search_regulatory_docs(query, limit=3):
     return []
 
 def call_llm(prompt, model="llama3.1-70b"):
-    escaped = prompt.replace("'", "''")
-    result = run_query(f"SELECT SNOWFLAKE.CORTEX.COMPLETE('{model}', '{escaped}') AS RESPONSE")
-    return result["RESPONSE"].iloc[0] if len(result) > 0 else "Error generating response."
+    try:
+        escaped = prompt.replace("'", "''")
+        result = run_query(f"SELECT SNOWFLAKE.CORTEX.COMPLETE('{model}', '{escaped}') AS RESPONSE")
+        return result["RESPONSE"].iloc[0] if len(result) > 0 else "Error generating response."
+    except Exception as e:
+        return f"LLM Error: {str(e)[:200]}. Please try again or rephrase your question."
 
 def log_audit(action_type, alert_id, user_query, rag_context, llm_response):
     q = user_query.replace("'", "''")[:2000]
@@ -632,47 +677,79 @@ elif page == "Regulatory Chat":
     query = pending or user_input
 
     if query:
-        st.session_state.chat_history.append({"role": "user", "content": query})
-        st.markdown(f"""
-        <div class="chat-user">
-            <div class="sender">You</div>
-            {query}
-        </div>
-        """, unsafe_allow_html=True)
+        # Guardrail: input validation
+        is_valid, validation_msg = validate_user_input(query)
+        if not is_valid:
+            st.error(f"Input blocked: {validation_msg}")
+        else:
+            # Guardrail: topic relevance check
+            is_relevant = check_topic_relevance(query)
 
-        with st.spinner("Searching regulatory corpus and generating answer..."):
-            rag_results = search_regulatory_docs(query, limit=4)
-            rag_context = "\n\n---\n\n".join([f"[{r.get('DOC_NAME', 'Unknown')}]: {r.get('CHUNK_TEXT', '')}" for r in rag_results])
-            sources = [{"doc": r.get("DOC_NAME", "Unknown"), "text": r.get("CHUNK_TEXT", "")} for r in rag_results]
+            st.session_state.chat_history.append({"role": "user", "content": query})
+            st.markdown(f"""
+            <div class="chat-user">
+                <div class="sender">You</div>
+                {query}
+            </div>
+            """, unsafe_allow_html=True)
 
-            prompt = f"""You are a regulatory compliance expert assistant. Answer the user's question using ONLY the regulatory document excerpts below. If the answer is not in the context, say so.
+            if not is_relevant:
+                st.warning("This question may be outside the copilot's domain (risk, fraud, regulatory compliance). Results may be limited.")
+
+            with st.spinner("Searching regulatory corpus and generating answer..."):
+                rag_results = search_regulatory_docs(query, limit=4)
+                rag_context = "\n\n---\n\n".join([f"[{r.get('DOC_NAME', 'Unknown')}]: {r.get('CHUNK_TEXT', '')}" for r in rag_results])
+                sources = [{"doc": r.get("DOC_NAME", "Unknown"), "text": r.get("CHUNK_TEXT", "")} for r in rag_results]
+
+                # Guardrail: check if RAG found relevant sources
+                if len(rag_results) == 0:
+                    st.warning("No relevant regulatory documents found for this query. The response will be based on general knowledge and should be independently verified.")
+
+                prompt = f"""You are a regulatory compliance expert assistant. Answer the user's question using ONLY the regulatory document excerpts below. If the answer is not in the context, say so clearly and do NOT make up information.
 
 REGULATORY CONTEXT:
 {rag_context}
 
 USER QUESTION: {query}
 
-Provide a clear, structured answer. Cite specific document names and sections. Synthesize information from multiple documents when relevant."""
+GUARDRAILS:
+- Only use information from the regulatory context above
+- If the answer is not found in the context, explicitly state this
+- Always cite the specific document name and section number
+- Flag any uncertainty with clear disclaimers
+- Do not provide legal advice - this is for informational purposes only
 
-            response = call_llm(prompt)
-            log_audit("REGULATORY_CHAT", None, query, rag_context[:4000], response[:8000])
+Provide a clear, structured answer. Cite specific document names and sections."""
 
-            st.markdown(f"""
-            <div class="chat-assistant">
-                <div class="sender">Copilot | {len(sources)} sources found</div>
-            </div>
-            """, unsafe_allow_html=True)
-            st.markdown(response)
+                response = call_llm(prompt)
 
-            if sources:
-                with st.expander(f"View {len(sources)} Sources"):
-                    for s in sources:
-                        st.markdown(f"""
-                        <div class="info-card">
-                            <div style="font-weight:600; color:#2b6cb0; font-size:0.85rem;">{s['doc']}</div>
-                            <div style="font-size:0.8rem; color:#4a5568; margin-top:0.3rem;">{s['text'][:300]}...</div>
-                        </div>
-                        """, unsafe_allow_html=True)
+                # Guardrail: output validation and confidence scoring
+                response, confidence, confidence_note = validate_llm_output(response)
+                log_audit("REGULATORY_CHAT", None, query, rag_context[:4000], response[:8000])
+
+                # Confidence indicator
+                conf_color = {"HIGH": "#38a169", "MEDIUM": "#dd6b20", "LOW": "#e53e3e"}.get(confidence, "#718096")
+                st.markdown(f"""
+                <div class="chat-assistant">
+                    <div class="sender">Copilot | {len(sources)} sources | Confidence: <span style="color:{conf_color}; font-weight:700;">{confidence}</span></div>
+                </div>
+                """, unsafe_allow_html=True)
+                st.markdown(response)
+
+                # Confidence note
+                st.caption(f"Confidence: {confidence_note}")
+                if confidence == "LOW":
+                    st.warning("Low confidence response. Please verify against original regulatory documents before taking action.")
+
+                if sources:
+                    with st.expander(f"View {len(sources)} Sources"):
+                        for s in sources:
+                            st.markdown(f"""
+                            <div class="info-card">
+                                <div style="font-weight:600; color:#2b6cb0; font-size:0.85rem;">{s['doc']}</div>
+                                <div style="font-size:0.8rem; color:#4a5568; margin-top:0.3rem;">{s['text'][:300]}...</div>
+                            </div>
+                            """, unsafe_allow_html=True)
 
             st.session_state.chat_history.append({"role": "assistant", "content": response, "sources": sources})
 
