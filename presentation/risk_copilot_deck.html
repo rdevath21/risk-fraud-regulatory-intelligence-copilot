@@ -3,483 +3,552 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Risk, Fraud &amp; Regulatory Intelligence Copilot</title>
+<title>Risk, Fraud &amp; Regulatory Intelligence Copilot - Submission Deck</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: 'Inter', -apple-system, sans-serif; background: #0f172a; color: #e2e8f0; overflow: hidden; }
 
-  .slide { width: 100vw; height: 100vh; display: none; padding: 60px 80px; position: relative; }
+  .slide { width: 100vw; height: 100vh; display: none; padding: 50px 70px; position: relative; }
   .slide.active { display: flex; flex-direction: column; }
 
-  /* Navigation */
-  .nav { position: fixed; bottom: 30px; right: 40px; z-index: 100; display: flex; gap: 12px; align-items: center; }
-  .nav button { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; font-family: inherit; transition: all 0.2s; }
+  .nav { position: fixed; bottom: 24px; right: 40px; z-index: 100; display: flex; gap: 12px; align-items: center; }
+  .nav button { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 8px 18px; border-radius: 8px; cursor: pointer; font-size: 13px; font-family: inherit; transition: all 0.2s; }
   .nav button:hover { background: rgba(255,255,255,0.25); }
-  .nav .counter { color: rgba(255,255,255,0.5); font-size: 14px; }
+  .nav .counter { color: rgba(255,255,255,0.5); font-size: 13px; }
 
-  /* Slide dots */
-  .dots { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 100; }
+  .dots { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 100; }
   .dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.2); cursor: pointer; transition: all 0.3s; }
-  .dot.active { background: #38bdf8; width: 30px; border-radius: 5px; }
+  .dot.active { background: #38bdf8; width: 28px; border-radius: 5px; }
 
-  /* Common elements */
-  .slide-number { position: absolute; top: 30px; right: 40px; font-size: 13px; color: rgba(255,255,255,0.3); }
-  .tag { display: inline-block; padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .slide-number { position: absolute; top: 24px; right: 40px; font-size: 12px; color: rgba(255,255,255,0.3); }
+  .slide-label { position: absolute; top: 24px; left: 70px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+  .tag { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
   .tag-blue { background: rgba(56,189,248,0.15); color: #38bdf8; border: 1px solid rgba(56,189,248,0.3); }
   .tag-green { background: rgba(52,211,153,0.15); color: #34d399; border: 1px solid rgba(52,211,153,0.3); }
   .tag-purple { background: rgba(168,85,247,0.15); color: #a855f7; border: 1px solid rgba(168,85,247,0.3); }
   .tag-orange { background: rgba(251,146,60,0.15); color: #fb923c; border: 1px solid rgba(251,146,60,0.3); }
   .tag-red { background: rgba(248,113,113,0.15); color: #f87171; border: 1px solid rgba(248,113,113,0.3); }
+  .tag-white { background: rgba(255,255,255,0.08); color: #cbd5e1; border: 1px solid rgba(255,255,255,0.15); }
 
-  h1 { font-size: 48px; font-weight: 800; line-height: 1.1; }
-  h2 { font-size: 36px; font-weight: 700; margin-bottom: 30px; }
-  h3 { font-size: 22px; font-weight: 600; margin-bottom: 12px; }
-  .subtitle { font-size: 20px; color: #94a3b8; margin-top: 16px; line-height: 1.5; }
+  h1 { font-size: 44px; font-weight: 800; line-height: 1.15; }
+  h2 { font-size: 32px; font-weight: 700; margin-bottom: 24px; }
+  h3 { font-size: 20px; font-weight: 600; margin-bottom: 10px; }
+  .subtitle { font-size: 18px; color: #94a3b8; margin-top: 14px; line-height: 1.5; }
   .gradient-text { background: linear-gradient(135deg, #38bdf8, #a855f7, #f472b6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
-  /* Cards */
-  .card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 24px; }
-  .card-grid { display: grid; gap: 20px; flex: 1; }
+  .card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 20px; }
+  .card-grid { display: grid; gap: 16px; }
   .card-grid-2 { grid-template-columns: 1fr 1fr; }
   .card-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
   .card-grid-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+  .card p { font-size: 13px; color: #94a3b8; line-height: 1.6; }
 
-  .card-icon { font-size: 36px; margin-bottom: 12px; }
-  .card h3 { font-size: 18px; }
-  .card p { font-size: 14px; color: #94a3b8; line-height: 1.6; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; flex: 1; align-items: start; }
 
-  /* Flow diagram */
-  .flow { display: flex; align-items: center; gap: 0; justify-content: center; flex-wrap: wrap; }
-  .flow-box { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 16px 20px; text-align: center; min-width: 140px; }
-  .flow-box h4 { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
-  .flow-box p { font-size: 11px; color: #94a3b8; }
-  .flow-arrow { color: #38bdf8; font-size: 24px; margin: 0 8px; }
-
-  /* Stats */
-  .stat-box { text-align: center; }
-  .stat-number { font-size: 48px; font-weight: 800; }
-  .stat-label { font-size: 14px; color: #94a3b8; margin-top: 4px; }
-
-  /* Table */
-  .mini-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-  .mini-table th { text-align: left; padding: 10px 12px; color: #94a3b8; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-  .mini-table td { padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-
-  /* Specific slides */
   .title-slide { justify-content: center; align-items: center; text-align: center; background: radial-gradient(ellipse at 30% 50%, rgba(56,189,248,0.08), transparent 60%), radial-gradient(ellipse at 70% 50%, rgba(168,85,247,0.08), transparent 60%); }
 
-  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; flex: 1; align-items: start; }
+  .pipeline-layer { border-radius: 10px; padding: 16px 20px; margin-bottom: 10px; }
+  .layer-raw { background: linear-gradient(135deg, rgba(251,146,60,0.1), rgba(251,146,60,0.04)); border-left: 4px solid #fb923c; }
+  .layer-transform { background: linear-gradient(135deg, rgba(56,189,248,0.1), rgba(56,189,248,0.04)); border-left: 4px solid #38bdf8; }
+  .layer-semantic { background: linear-gradient(135deg, rgba(168,85,247,0.1), rgba(168,85,247,0.04)); border-left: 4px solid #a855f7; }
+  .layer-app { background: linear-gradient(135deg, rgba(52,211,153,0.1), rgba(52,211,153,0.04)); border-left: 4px solid #34d399; }
 
-  .pipeline-layer { border-radius: 12px; padding: 20px 24px; margin-bottom: 12px; }
-  .layer-raw { background: linear-gradient(135deg, rgba(251,146,60,0.1), rgba(251,146,60,0.05)); border-left: 4px solid #fb923c; }
-  .layer-transform { background: linear-gradient(135deg, rgba(56,189,248,0.1), rgba(56,189,248,0.05)); border-left: 4px solid #38bdf8; }
-  .layer-semantic { background: linear-gradient(135deg, rgba(168,85,247,0.1), rgba(168,85,247,0.05)); border-left: 4px solid #a855f7; }
+  .flow { display: flex; align-items: center; gap: 0; justify-content: center; }
+  .flow-box { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; padding: 14px 18px; text-align: center; min-width: 150px; }
+  .flow-box h4 { font-size: 12px; font-weight: 700; margin-bottom: 3px; }
+  .flow-box p { font-size: 10px; color: #94a3b8; }
+  .flow-arrow { color: #38bdf8; font-size: 22px; margin: 0 6px; }
 
-  .surface-item { display: flex; align-items: center; gap: 16px; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
-  .surface-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+  .stat-number { font-size: 42px; font-weight: 800; }
+  .stat-label { font-size: 13px; color: #94a3b8; margin-top: 4px; }
 
-  .guardrail-item { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 16px; }
-  .guardrail-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; background: rgba(52,211,153,0.15); }
+  .persona-card { display: flex; gap: 16px; align-items: flex-start; padding: 16px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; }
+  .persona-icon { font-size: 32px; flex-shrink: 0; }
+  .persona-card h4 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .persona-card p { font-size: 12px; color: #94a3b8; line-height: 1.5; }
 
-  .logo-bar { display: flex; gap: 24px; align-items: center; justify-content: center; margin-top: 30px; opacity: 0.6; font-size: 14px; }
-  .logo-bar span { padding: 8px 16px; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; }
+  .impact-row { display: flex; align-items: center; gap: 20px; padding: 16px 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .impact-before { flex: 1; text-align: right; color: #f87171; font-size: 14px; }
+  .impact-arrow { color: #38bdf8; font-size: 24px; flex-shrink: 0; }
+  .impact-after { flex: 1; text-align: left; color: #34d399; font-size: 14px; font-weight: 600; }
+  .impact-metric { flex-shrink: 0; width: 120px; text-align: center; }
+  .impact-metric .num { font-size: 28px; font-weight: 800; color: #38bdf8; }
+  .impact-metric .lbl { font-size: 11px; color: #94a3b8; }
+
+  .logo-bar { display: flex; gap: 16px; align-items: center; justify-content: center; margin-top: 24px; opacity: 0.6; font-size: 13px; }
+  .logo-bar span { padding: 6px 14px; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; }
+
+  .guardrail-item { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 12px; }
+  .guardrail-icon { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; background: rgba(52,211,153,0.15); }
 </style>
 </head>
 <body>
 
-<!-- SLIDE 1: Title -->
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SLIDE 1: TITLE                                  -->
+<!-- ═══════════════════════════════════════════════ -->
 <div class="slide title-slide active" id="slide-1">
   <div class="slide-number">01 / 08</div>
-  <div style="max-width: 900px;">
-    <div style="margin-bottom: 24px;">
-      <span class="tag tag-blue">Snowflake CoCo Hackathon 2026</span>
+  <div style="max-width: 860px;">
+    <div style="margin-bottom: 20px;">
+      <span class="tag tag-blue">CoCo Hackathon GCC Edition 2026</span>
     </div>
     <h1>Risk, Fraud &amp;<br><span class="gradient-text">Regulatory Intelligence</span><br>Copilot</h1>
-    <p class="subtitle">AI-powered compliance investigation platform that surfaces risk signals,<br>generates audit-ready evidence, and produces regulatory outputs from natural language.</p>
+    <p class="subtitle">An AI-powered compliance investigation platform that surfaces risk signals, generates audit-ready evidence, and produces regulatory outputs from natural language questions.</p>
     <div class="logo-bar">
       <span>Snowflake Cortex AI</span>
-      <span>Cortex Code (CoCo)</span>
+      <span>CoCo Desktop</span>
       <span>Streamlit</span>
-      <span>MCP</span>
+      <span>MCP Server</span>
+      <span>Cortex Agents</span>
     </div>
-    <p style="margin-top: 40px; color: #64748b; font-size: 14px;">Built end-to-end with CoCo Desktop | 33 Snowflake Objects | 3 Cortex Agents | 5 Surfaces</p>
+    <p style="margin-top: 30px; color: #64748b; font-size: 13px;">Built end-to-end with CoCo Desktop &nbsp;|&nbsp; 33 Snowflake Objects &nbsp;|&nbsp; 3 Cortex Agents &nbsp;|&nbsp; 5 Access Surfaces</p>
+    <p style="margin-top: 10px; color: #475569; font-size: 13px;">GitHub: github.com/rdevath21/risk-fraud-regulatory-intelligence-copilot</p>
   </div>
 </div>
 
-<!-- SLIDE 2: Problem + Solution -->
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SLIDE 2: PROBLEM BRIEF                          -->
+<!-- ═══════════════════════════════════════════════ -->
 <div class="slide" id="slide-2">
   <div class="slide-number">02 / 08</div>
-  <h2>The Problem <span style="color:#94a3b8;">&amp;</span> Our Solution</h2>
+  <div class="slide-label" style="color: #f87171;">PROBLEM BRIEF</div>
+  <h2 style="margin-top: 20px;">The Problem We Solve</h2>
   <div class="two-col" style="align-items: stretch;">
-    <div>
-      <div class="card" style="height: 100%; border-color: rgba(248,113,113,0.3);">
-        <div class="card-icon">&#9888;</div>
-        <h3 style="color: #f87171; margin-bottom: 16px;">Today's Pain Points</h3>
-        <div style="display: flex; flex-direction: column; gap: 16px;">
-          <div style="display: flex; gap: 12px; align-items: flex-start;">
-            <span style="color: #f87171; font-size: 18px;">&#10005;</span>
-            <div><strong>Manual Alert Triage</strong><p style="font-size: 13px; color: #94a3b8;">Analysts spend hours reviewing each alert, pulling transaction data, and cross-referencing regulations</p></div>
-          </div>
-          <div style="display: flex; gap: 12px; align-items: flex-start;">
-            <span style="color: #f87171; font-size: 18px;">&#10005;</span>
-            <div><strong>Scattered Regulatory Knowledge</strong><p style="font-size: 13px; color: #94a3b8;">AML policies, Basel III rules, and internal procedures live in disconnected documents</p></div>
-          </div>
-          <div style="display: flex; gap: 12px; align-items: flex-start;">
-            <span style="color: #f87171; font-size: 18px;">&#10005;</span>
-            <div><strong>No Audit Trail for AI</strong><p style="font-size: 13px; color: #94a3b8;">AI-assisted decisions lack the explainability and documentation regulators demand</p></div>
-          </div>
-          <div style="display: flex; gap: 12px; align-items: flex-start;">
-            <span style="color: #f87171; font-size: 18px;">&#10005;</span>
-            <div><strong>Slow Evidence Generation</strong><p style="font-size: 13px; color: #94a3b8;">SAR filing requires structured evidence reports that take days to compile manually</p></div>
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <div class="card" style="border-color: rgba(248,113,113,0.2);">
+        <div style="display: flex; gap: 10px; align-items: flex-start;">
+          <span style="color: #f87171; font-size: 20px;">&#9888;</span>
+          <div>
+            <h3 style="font-size: 16px; color: #f87171;">Industry Context</h3>
+            <p>Banking and NBFC teams manage real-time fraud detection, liquidity risk, credit risk, and regulatory reporting (AML, Basel, local regulations). These processes are <strong style="color: #e2e8f0;">largely manual today</strong>, creating compliance gaps and investigation backlogs.</p>
           </div>
         </div>
       </div>
+      <div class="card" style="border-color: rgba(248,113,113,0.2);">
+        <h3 style="font-size: 16px; color: #f87171; margin-bottom: 8px;">Current Pain Points</h3>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; gap: 8px;"><span style="color: #f87171;">&#10005;</span><p><strong style="color:#e2e8f0;">4-8 hours</strong> per alert for manual investigation and evidence compilation</p></div>
+          <div style="display: flex; gap: 8px;"><span style="color: #f87171;">&#10005;</span><p>Regulatory policies scattered across <strong style="color:#e2e8f0;">dozens of documents</strong> with no unified search</p></div>
+          <div style="display: flex; gap: 8px;"><span style="color: #f87171;">&#10005;</span><p>No audit trail for AI-assisted decisions &mdash; <strong style="color:#e2e8f0;">regulators demand explainability</strong></p></div>
+          <div style="display: flex; gap: 8px;"><span style="color: #f87171;">&#10005;</span><p>SAR filing backlogs: <strong style="color:#e2e8f0;">30-day deadline</strong> often at risk due to slow evidence generation</p></div>
+        </div>
+      </div>
     </div>
-    <div>
-      <div class="card" style="height: 100%; border-color: rgba(52,211,153,0.3);">
-        <div class="card-icon">&#9889;</div>
-        <h3 style="color: #34d399; margin-bottom: 16px;">Our Copilot Solution</h3>
-        <div style="display: flex; flex-direction: column; gap: 16px;">
-          <div style="display: flex; gap: 12px; align-items: flex-start;">
-            <span style="color: #34d399; font-size: 18px;">&#10003;</span>
-            <div><strong>AI-Powered Signal Detection</strong><p style="font-size: 13px; color: #94a3b8;">6 fraud patterns detected automatically: structuring, layering, velocity spikes, round-tripping, dormant reactivation, shell company activity</p></div>
-          </div>
-          <div style="display: flex; gap: 12px; align-items: flex-start;">
-            <span style="color: #34d399; font-size: 18px;">&#10003;</span>
-            <div><strong>RAG Over Regulatory Corpus</strong><p style="font-size: 13px; color: #94a3b8;">18 regulatory document chunks indexed with vector embeddings + Cortex Search for instant policy lookup</p></div>
-          </div>
-          <div style="display: flex; gap: 12px; align-items: flex-start;">
-            <span style="color: #34d399; font-size: 18px;">&#10003;</span>
-            <div><strong>Full Audit Trail</strong><p style="font-size: 13px; color: #94a3b8;">Every AI interaction logged: query, RAG context, LLM response, user, timestamp</p></div>
-          </div>
-          <div style="display: flex; gap: 12px; align-items: flex-start;">
-            <span style="color: #34d399; font-size: 18px;">&#10003;</span>
-            <div><strong>One-Click Evidence Reports</strong><p style="font-size: 13px; color: #94a3b8;">Click "Generate Evidence" and get a structured SAR-ready report with regulatory citations in seconds</p></div>
-          </div>
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <div style="margin-bottom: 4px;"><h3 style="color: #94a3b8; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Target Users</h3></div>
+      <div class="persona-card">
+        <div class="persona-icon">&#128373;</div>
+        <div>
+          <h4>AML Compliance Analyst</h4>
+          <p>Triages alerts daily, investigates suspicious transactions, generates SAR evidence packages. Needs fast access to transaction data + regulatory context.</p>
+        </div>
+      </div>
+      <div class="persona-card">
+        <div class="persona-icon">&#128100;</div>
+        <div>
+          <h4>BSA Officer / Compliance Manager</h4>
+          <p>Reviews investigations, makes SAR filing decisions, reports to board. Needs governed, auditable outputs with regulatory citations.</p>
+        </div>
+      </div>
+      <div class="persona-card">
+        <div class="persona-icon">&#128202;</div>
+        <div>
+          <h4>Risk Auditor</h4>
+          <p>Performs periodic reviews of investigation quality and AI usage. Needs read-only access with full audit trail visibility.</p>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- SLIDE 3: Architecture -->
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SLIDE 3: ARCHITECTURE DIAGRAM                   -->
+<!-- ═══════════════════════════════════════════════ -->
 <div class="slide" id="slide-3">
   <div class="slide-number">03 / 08</div>
-  <h2>Data Architecture <span class="gradient-text">RAW &rarr; TRANSFORM &rarr; SEMANTIC</span></h2>
-  <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
+  <div class="slide-label" style="color: #38bdf8;">ARCHITECTURE DIAGRAM</div>
+  <h2 style="margin-top: 20px;">System Architecture <span class="gradient-text">&amp; Data Flow</span></h2>
+  <div style="flex: 1; display: flex; flex-direction: column; gap: 10px;">
     <div class="pipeline-layer layer-raw">
       <div style="display: flex; justify-content: space-between; align-items: center;">
         <div>
-          <h3 style="color: #fb923c; margin-bottom: 4px;">RAW Schema &mdash; Landing Zone</h3>
-          <p style="font-size: 14px; color: #94a3b8;">Data arrives here from ingestion. Daily task generates synthetic transactions at 2AM UTC.</p>
+          <h3 style="color: #fb923c; margin-bottom: 2px; font-size: 16px;">RAW Schema &mdash; Data Ingestion</h3>
+          <p style="font-size: 12px; color: #94a3b8;">Landing zone. Daily task (2AM UTC) generates synthetic transactions. Stream captures CDC.</p>
         </div>
-        <div style="display: flex; gap: 12px;">
-          <span class="tag tag-orange">RAW_CUSTOMERS</span>
-          <span class="tag tag-orange">RAW_TRANSACTIONS</span>
-          <span class="tag tag-orange">RAW_RISK_SCORES</span>
-          <span class="tag tag-orange">RAW_ALERTS</span>
-          <span class="tag tag-orange">STREAM</span>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <span class="tag tag-orange" style="font-size: 10px;">RAW_CUSTOMERS</span>
+          <span class="tag tag-orange" style="font-size: 10px;">RAW_TRANSACTIONS</span>
+          <span class="tag tag-orange" style="font-size: 10px;">RAW_RISK_SCORES</span>
+          <span class="tag tag-orange" style="font-size: 10px;">RAW_ALERTS</span>
+          <span class="tag tag-orange" style="font-size: 10px;">STREAM</span>
         </div>
       </div>
     </div>
-    <div style="text-align: center; color: #38bdf8; font-size: 28px;">&#8595; Dynamic Tables (auto-refresh, 1-min lag) &#8595;</div>
+    <div style="text-align: center; color: #38bdf8; font-size: 18px;">&#8595; 6 Dynamic Tables (auto-refresh, 1-min target lag) &#8595;</div>
     <div class="pipeline-layer layer-transform">
       <div style="display: flex; justify-content: space-between; align-items: center;">
         <div>
-          <h3 style="color: #38bdf8; margin-bottom: 4px;">TRANSFORM Schema &mdash; Business Logic</h3>
-          <p style="font-size: 14px; color: #94a3b8;">6 dynamic tables with enrichment: amount buckets, risk flags, SLA tracking, pattern detection.</p>
+          <h3 style="color: #38bdf8; margin-bottom: 2px; font-size: 16px;">TRANSFORM Schema &mdash; Business Logic</h3>
+          <p style="font-size: 12px; color: #94a3b8;">Enrichment: amount buckets, risk flags, SLA tracking, KYC actions, pattern detection.</p>
         </div>
-        <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: flex-end;">
-          <span class="tag tag-blue">DT_CUSTOMERS</span>
-          <span class="tag tag-blue">DT_TRANSACTIONS</span>
-          <span class="tag tag-blue">DT_RISK_ENRICHED</span>
-          <span class="tag tag-blue">DT_ALERT_ENRICHED</span>
-          <span class="tag tag-blue">DT_SUSPICIOUS_PATTERNS</span>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <span class="tag tag-blue" style="font-size: 10px;">DT_CUSTOMERS</span>
+          <span class="tag tag-blue" style="font-size: 10px;">DT_TRANSACTIONS</span>
+          <span class="tag tag-blue" style="font-size: 10px;">DT_RISK_ENRICHED</span>
+          <span class="tag tag-blue" style="font-size: 10px;">DT_ALERT_ENRICHED</span>
+          <span class="tag tag-blue" style="font-size: 10px;">DT_SUSPICIOUS_PATTERNS</span>
         </div>
       </div>
     </div>
-    <div style="text-align: center; color: #a855f7; font-size: 28px;">&#8595; Semantic View + Search Service &#8595;</div>
+    <div style="text-align: center; color: #a855f7; font-size: 18px;">&#8595; Semantic View + Cortex Search + AI Functions &#8595;</div>
     <div class="pipeline-layer layer-semantic">
       <div style="display: flex; justify-content: space-between; align-items: center;">
         <div>
-          <h3 style="color: #a855f7; margin-bottom: 4px;">SEMANTIC Schema &mdash; Business-Facing Layer</h3>
-          <p style="font-size: 14px; color: #94a3b8;">Semantic view with 16 dimensions, 4 metrics, 4 verified queries. Cortex Search Service for RAG.</p>
+          <h3 style="color: #a855f7; margin-bottom: 2px; font-size: 16px;">SEMANTIC Schema &mdash; Intelligence Layer</h3>
+          <p style="font-size: 12px; color: #94a3b8;">Semantic view (16 dimensions, 4 metrics, 4 VQs) + RAG search + AI_EXTRACT + AI_CLASSIFY.</p>
         </div>
-        <div style="display: flex; gap: 12px;">
-          <span class="tag tag-purple">SV_RISK_INTELLIGENCE</span>
-          <span class="tag tag-purple">REGULATORY_SEARCH_SERVICE</span>
+        <div style="display: flex; gap: 8px;">
+          <span class="tag tag-purple" style="font-size: 10px;">SV_RISK_INTELLIGENCE</span>
+          <span class="tag tag-purple" style="font-size: 10px;">SEARCH_SERVICE</span>
+          <span class="tag tag-purple" style="font-size: 10px;">AI_EXTRACT</span>
+          <span class="tag tag-purple" style="font-size: 10px;">AI_CLASSIFY</span>
         </div>
       </div>
     </div>
-    <div style="display: flex; gap: 20px; margin-top: 8px; justify-content: center;">
-      <div class="card" style="text-align: center; padding: 16px 24px;">
-        <div class="stat-number" style="font-size: 32px; color: #fb923c;">3</div>
-        <div class="stat-label">Scheduled Tasks</div>
+    <div style="text-align: center; color: #34d399; font-size: 18px;">&#8595; 3 Cortex Agents + MCP Server + 5 Surfaces &#8595;</div>
+    <div class="pipeline-layer layer-app">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <h3 style="color: #34d399; margin-bottom: 2px; font-size: 16px;">Application Layer &mdash; Multi-Surface Access</h3>
+          <p style="font-size: 12px; color: #94a3b8;">3 agents (Triage, Compliance, Intelligence), MCP server, 5-page Streamlit app, Slack bot.</p>
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <span class="tag tag-green" style="font-size: 10px;">STREAMLIT</span>
+          <span class="tag tag-green" style="font-size: 10px;">CORTEX AGENTS (3)</span>
+          <span class="tag tag-green" style="font-size: 10px;">MCP SERVER</span>
+          <span class="tag tag-green" style="font-size: 10px;">COCO SKILLS (3)</span>
+          <span class="tag tag-green" style="font-size: 10px;">SLACK BOT</span>
+        </div>
       </div>
-      <div class="card" style="text-align: center; padding: 16px 24px;">
-        <div class="stat-number" style="font-size: 32px; color: #38bdf8;">6</div>
-        <div class="stat-label">Dynamic Tables</div>
+    </div>
+    <div style="display: flex; gap: 16px; margin-top: 4px; justify-content: center;">
+      <div class="card" style="text-align: center; padding: 12px 20px;">
+        <div class="stat-number" style="font-size: 28px; color: #fb923c;">3</div><div class="stat-label">Scheduled Tasks</div>
       </div>
-      <div class="card" style="text-align: center; padding: 16px 24px;">
-        <div class="stat-number" style="font-size: 32px; color: #a855f7;">4</div>
-        <div class="stat-label">Verified Queries</div>
+      <div class="card" style="text-align: center; padding: 12px 20px;">
+        <div class="stat-number" style="font-size: 28px; color: #38bdf8;">6</div><div class="stat-label">Dynamic Tables</div>
       </div>
-      <div class="card" style="text-align: center; padding: 16px 24px;">
-        <div class="stat-number" style="font-size: 32px; color: #34d399;">33</div>
-        <div class="stat-label">Total Objects</div>
+      <div class="card" style="text-align: center; padding: 12px 20px;">
+        <div class="stat-number" style="font-size: 28px; color: #a855f7;">6</div><div class="stat-label">Cortex AI Functions</div>
+      </div>
+      <div class="card" style="text-align: center; padding: 12px 20px;">
+        <div class="stat-number" style="font-size: 28px; color: #34d399;">33</div><div class="stat-label">Total Objects</div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- SLIDE 4: Multi-Agent Orchestration -->
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SLIDE 4: CoCo SKILLS & MULTI-AGENT              -->
+<!-- ═══════════════════════════════════════════════ -->
 <div class="slide" id="slide-4">
   <div class="slide-number">04 / 08</div>
-  <h2>Multi-Agent <span class="gradient-text">Orchestration</span></h2>
-  <p style="color: #94a3b8; margin-bottom: 24px;">3 specialized Cortex Agents with clear handoffs, coordinated by a CoCo skill</p>
-  <div style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
-    <div class="flow" style="margin-bottom: 30px;">
-      <div class="flow-box" style="border-color: rgba(56,189,248,0.4); min-width: 200px;">
-        <div style="font-size: 28px; margin-bottom: 6px;">&#128269;</div>
-        <h4 style="color: #38bdf8;">RISK_TRIAGE_AGENT</h4>
-        <p>Data Specialist</p>
-        <div class="tag tag-blue" style="margin-top: 8px; font-size: 10px;">cortex_analyst_text_to_sql</div>
+  <div class="slide-label" style="color: #a855f7;">COCO SKILLS &amp; AGENTS</div>
+  <h2 style="margin-top: 20px;">CoCo Skills <span class="gradient-text">&amp; Multi-Agent Orchestration</span></h2>
+  <div class="two-col">
+    <div>
+      <h3 style="color: #34d399; margin-bottom: 16px;">Reusable CoCo Skills</h3>
+      <div class="card" style="margin-bottom: 12px; border-color: rgba(52,211,153,0.2);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+          <h3 style="font-size: 15px; margin: 0;">/risk-copilot-deploy</h3>
+          <span class="tag tag-green" style="font-size: 10px;">DEPLOYMENT</span>
+        </div>
+        <p>Deploys entire copilot to any Snowflake account: schemas, data, pipelines, agents, Streamlit app.</p>
       </div>
-      <div class="flow-arrow">&#10132;</div>
-      <div class="flow-box" style="border-color: rgba(168,85,247,0.4); min-width: 200px;">
-        <div style="font-size: 28px; margin-bottom: 6px;">&#128220;</div>
-        <h4 style="color: #a855f7;">REGULATORY_COMPLIANCE_AGENT</h4>
-        <p>Policy Expert</p>
-        <div class="tag tag-purple" style="margin-top: 8px; font-size: 10px;">cortex_search (RAG)</div>
+      <div class="card" style="margin-bottom: 12px; border-color: rgba(52,211,153,0.2);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+          <h3 style="font-size: 15px; margin: 0;">/risk-copilot-investigate</h3>
+          <span class="tag tag-blue" style="font-size: 10px;">INVESTIGATION</span>
+        </div>
+        <p>Investigates an alert or customer with RAG-backed AI evidence generation and audit logging.</p>
       </div>
-      <div class="flow-arrow">&#10132;</div>
-      <div class="flow-box" style="border-color: rgba(52,211,153,0.4); min-width: 200px;">
-        <div style="font-size: 28px; margin-bottom: 6px;">&#129302;</div>
-        <h4 style="color: #34d399;">RISK_INTELLIGENCE_AGENT</h4>
-        <p>Orchestrator</p>
-        <div class="tag tag-green" style="margin-top: 8px; font-size: 10px;">Both tools combined</div>
+      <div class="card" style="border-color: rgba(52,211,153,0.2);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+          <h3 style="font-size: 15px; margin: 0;">/risk-copilot-orchestrate</h3>
+          <span class="tag tag-purple" style="font-size: 10px;">ORCHESTRATION</span>
+        </div>
+        <p>Coordinates 3 agents with clear handoffs: Triage &#10132; Compliance &#10132; Intelligence synthesis.</p>
       </div>
     </div>
-    <div class="card-grid card-grid-3" style="flex: 0;">
-      <div class="card">
-        <h3 style="color: #38bdf8;">Step 1: Triage</h3>
-        <p>Screens the alert. Pulls customer profile, transaction history, risk scores. Identifies the suspicious pattern.</p>
-        <p style="margin-top: 8px; font-size: 12px; color: #38bdf8;">Output: Data context summary</p>
-      </div>
-      <div class="card">
-        <h3 style="color: #a855f7;">Step 2: Compliance</h3>
-        <p>Searches regulatory corpus for applicable AML rules, filing requirements, SLA timelines, and policy citations.</p>
-        <p style="margin-top: 8px; font-size: 12px; color: #a855f7;">Output: Regulatory citations</p>
-      </div>
-      <div class="card">
-        <h3 style="color: #34d399;">Step 3: Synthesis</h3>
-        <p>Combines data context + regulatory citations into a structured evidence report with recommended actions.</p>
-        <p style="margin-top: 8px; font-size: 12px; color: #34d399;">Output: SAR-ready evidence report</p>
+    <div>
+      <h3 style="color: #a855f7; margin-bottom: 16px;">Multi-Agent Architecture</h3>
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div class="flow">
+          <div class="flow-box" style="border-color: rgba(56,189,248,0.4); width: 100%;">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <span style="font-size: 24px;">&#128269;</span>
+              <div style="text-align:left;">
+                <h4 style="color: #38bdf8; font-size: 14px;">RISK_TRIAGE_AGENT</h4>
+                <p style="font-size: 11px;">Data Specialist &mdash; cortex_analyst_text_to_sql</p>
+                <p style="font-size: 11px; margin-top:2px;">Screens alerts, pulls transactions, risk scores</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="text-align: center; color: #38bdf8; font-size: 16px;">&#8595; handoff: triage context</div>
+        <div class="flow">
+          <div class="flow-box" style="border-color: rgba(168,85,247,0.4); width: 100%;">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <span style="font-size: 24px;">&#128220;</span>
+              <div style="text-align:left;">
+                <h4 style="color: #a855f7; font-size: 14px;">REGULATORY_COMPLIANCE_AGENT</h4>
+                <p style="font-size: 11px;">Policy Expert &mdash; cortex_search (RAG)</p>
+                <p style="font-size: 11px; margin-top:2px;">Finds applicable regulations, filing requirements</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="text-align: center; color: #a855f7; font-size: 16px;">&#8595; handoff: regulatory citations</div>
+        <div class="flow">
+          <div class="flow-box" style="border-color: rgba(52,211,153,0.4); width: 100%;">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <span style="font-size: 24px;">&#129302;</span>
+              <div style="text-align:left;">
+                <h4 style="color: #34d399; font-size: 14px;">RISK_INTELLIGENCE_AGENT</h4>
+                <p style="font-size: 11px;">Orchestrator &mdash; both tools combined</p>
+                <p style="font-size: 11px; margin-top:2px;">Synthesizes data + regulations into evidence report</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- SLIDE 5: 5 Surfaces -->
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SLIDE 5: SOLUTION DEMO FLOW                     -->
+<!-- ═══════════════════════════════════════════════ -->
 <div class="slide" id="slide-5">
   <div class="slide-number">05 / 08</div>
-  <h2>One Solution, <span class="gradient-text">5 Surfaces</span></h2>
-  <p style="color: #94a3b8; margin-bottom: 30px;">Same intelligence stack accessible across every interface</p>
-  <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
-    <div class="surface-item">
-      <div class="surface-icon" style="background: rgba(56,189,248,0.15); color: #38bdf8;">&#128202;</div>
-      <div style="flex: 1;">
-        <h3 style="margin-bottom: 2px;">Streamlit App</h3>
-        <p style="font-size: 14px; color: #94a3b8;">5-page copilot: Dashboard, Investigation, Regulatory Chat, Audit Trail, System Health</p>
-      </div>
-      <span class="tag tag-blue">Streamlit-in-Snowflake</span>
+  <div class="slide-label" style="color: #34d399;">SOLUTION WALKTHROUGH</div>
+  <h2 style="margin-top: 20px;">Signal &#10132; Evidence &#10132; <span class="gradient-text">Documented Finding</span></h2>
+  <p style="color: #94a3b8; margin-bottom: 20px;">Complete flow from detection to audit-ready report in a 5-page Streamlit copilot</p>
+  <div class="card-grid" style="grid-template-columns: 1fr 1fr 1fr 1fr 1fr; flex: 1;">
+    <div class="card" style="text-align: center; border-color: rgba(248,113,113,0.3);">
+      <div style="font-size: 32px; margin-bottom: 8px;">&#128202;</div>
+      <h3 style="font-size: 14px; color: #f87171;">Dashboard</h3>
+      <p style="font-size: 12px;">Color-coded KPI cards, severity badges, detection coverage, transaction volume trends, recent AI activity feed</p>
+      <div style="margin-top: 10px;"><span class="tag tag-red" style="font-size: 9px;">SIGNAL DETECTION</span></div>
     </div>
-    <div class="surface-item">
-      <div class="surface-icon" style="background: rgba(168,85,247,0.15); color: #a855f7;">&#129302;</div>
-      <div style="flex: 1;">
-        <h3 style="margin-bottom: 2px;">Snowsight Cortex Agent</h3>
-        <p style="font-size: 14px; color: #94a3b8;">All 3 agents accessible in AI &amp; ML section for direct natural language queries</p>
-      </div>
-      <span class="tag tag-purple">Snowsight</span>
+    <div class="card" style="text-align: center; border-color: rgba(56,189,248,0.3);">
+      <div style="font-size: 32px; margin-bottom: 8px;">&#128269;</div>
+      <h3 style="font-size: 14px; color: #38bdf8;">Investigation</h3>
+      <p style="font-size: 12px;">Alert drill-down, customer profile cards, risk score gauge, transaction timeline, one-click evidence generation</p>
+      <div style="margin-top: 10px;"><span class="tag tag-blue" style="font-size: 9px;">EVIDENCE GENERATION</span></div>
     </div>
-    <div class="surface-item">
-      <div class="surface-icon" style="background: rgba(52,211,153,0.15); color: #34d399;">&#128187;</div>
-      <div style="flex: 1;">
-        <h3 style="margin-bottom: 2px;">CoCo Desktop</h3>
-        <p style="font-size: 14px; color: #94a3b8;">3 reusable skills: /risk-copilot-deploy, /risk-copilot-investigate, /risk-copilot-orchestrate</p>
-      </div>
-      <span class="tag tag-green">CoCo Skills</span>
+    <div class="card" style="text-align: center; border-color: rgba(168,85,247,0.3);">
+      <div style="font-size: 32px; margin-bottom: 8px;">&#128172;</div>
+      <h3 style="font-size: 14px; color: #a855f7;">Regulatory Chat</h3>
+      <p style="font-size: 12px;">RAG-backed Q&amp;A, styled chat bubbles, source cards with citations, confidence scoring (HIGH/MED/LOW)</p>
+      <div style="margin-top: 10px;"><span class="tag tag-purple" style="font-size: 9px;">RAG + GUARDRAILS</span></div>
     </div>
-    <div class="surface-item">
-      <div class="surface-icon" style="background: rgba(251,146,60,0.15); color: #fb923c;">&#128268;</div>
-      <div style="flex: 1;">
-        <h3 style="margin-bottom: 2px;">MCP Server</h3>
-        <p style="font-size: 14px; color: #94a3b8;">RISK_COPILOT_MCP_SERVER connectable from Claude Desktop, Cursor, ChatGPT, any MCP client</p>
-      </div>
-      <span class="tag tag-orange">MCP Protocol</span>
+    <div class="card" style="text-align: center; border-color: rgba(52,211,153,0.3);">
+      <div style="font-size: 32px; margin-bottom: 8px;">&#128203;</div>
+      <h3 style="font-size: 14px; color: #34d399;">Audit Trail</h3>
+      <p style="font-size: 12px;">Full log of every AI action: query, RAG context, LLM response, user, timestamp. Charts + export capability</p>
+      <div style="margin-top: 10px;"><span class="tag tag-green" style="font-size: 9px;">DOCUMENTED FINDING</span></div>
     </div>
-    <div class="surface-item" style="border-bottom: none;">
-      <div class="surface-icon" style="background: rgba(248,113,113,0.15); color: #f87171;">&#128172;</div>
-      <div style="flex: 1;">
-        <h3 style="margin-bottom: 2px;">Slack Bot</h3>
-        <p style="font-size: 14px; color: #94a3b8;">/risk-alerts and /risk-ask commands + @RiskCopilot mentions for team-wide access</p>
-      </div>
-      <span class="tag tag-red">Slack Integration</span>
+    <div class="card" style="text-align: center; border-color: rgba(251,146,60,0.3);">
+      <div style="font-size: 32px; margin-bottom: 8px;">&#128736;</div>
+      <h3 style="font-size: 14px; color: #fb923c;">System Health</h3>
+      <p style="font-size: 12px;">Pipeline status, dynamic table freshness, task history, search service health, agent/MCP monitoring</p>
+      <div style="margin-top: 10px;"><span class="tag tag-orange" style="font-size: 9px;">OPERATIONS</span></div>
+    </div>
+  </div>
+  <div class="card" style="margin-top: 16px; padding: 14px 20px;">
+    <h3 style="font-size: 14px; margin-bottom: 8px; color: #94a3b8;">6 Fraud Patterns Detected</h3>
+    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+      <span class="tag tag-white">Structuring (sub-$10k deposits)</span>
+      <span class="tag tag-white">Layering (multi-jurisdiction)</span>
+      <span class="tag tag-white">Round-Tripping (circular flows)</span>
+      <span class="tag tag-white">Velocity Anomaly (burst activity)</span>
+      <span class="tag tag-white">Dormant Reactivation</span>
+      <span class="tag tag-white">Shell Company Activity</span>
     </div>
   </div>
 </div>
 
-<!-- SLIDE 6: AI Functions + Document Processing -->
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SLIDE 6: GUARDRAILS + GOVERNANCE                -->
+<!-- ═══════════════════════════════════════════════ -->
 <div class="slide" id="slide-6">
   <div class="slide-number">06 / 08</div>
-  <h2>Cortex AI <span class="gradient-text">Functions Used</span></h2>
-  <div class="card-grid card-grid-2" style="flex: 1;">
-    <div class="card">
-      <div class="card-icon">&#129504;</div>
-      <h3>CORTEX.COMPLETE (llama3.1-70b)</h3>
-      <p>Evidence report generation, regulatory Q&amp;A, investigation narratives. All responses grounded via RAG context injection.</p>
-      <div style="margin-top: 12px;"><span class="tag tag-blue">LLM</span></div>
-    </div>
-    <div class="card">
-      <div class="card-icon">&#128204;</div>
-      <h3>EMBED_TEXT_768 (e5-base-v2)</h3>
-      <p>768-dimension vector embeddings on 18 regulatory chunks. Powers semantic similarity search for RAG retrieval.</p>
-      <div style="margin-top: 12px;"><span class="tag tag-purple">Embeddings</span></div>
-    </div>
-    <div class="card">
-      <div class="card-icon">&#128209;</div>
-      <h3>AI_EXTRACT</h3>
-      <p>Structured field extraction from unstructured text. Pulls section numbers, dollar thresholds, regulatory citations, country lists from both regulatory docs and alert descriptions.</p>
-      <div style="margin-top: 12px;"><span class="tag tag-green">Document Processing</span></div>
-    </div>
-    <div class="card">
-      <div class="card-icon">&#127991;</div>
-      <h3>AI_CLASSIFY</h3>
-      <p>Automatic topic categorization of regulatory chunks into AML_COMPLIANCE, TRANSACTION_MONITORING, CUSTOMER_DUE_DILIGENCE, INVESTIGATION_PROCEDURES, and more.</p>
-      <div style="margin-top: 12px;"><span class="tag tag-orange">Classification</span></div>
-    </div>
-    <div class="card">
-      <div class="card-icon">&#128270;</div>
-      <h3>Cortex Search Service</h3>
-      <p>Hybrid semantic + keyword search over the regulatory corpus. 1-hour target lag for auto-refresh. Powers the RAG pipeline for all agents.</p>
-      <div style="margin-top: 12px;"><span class="tag tag-blue">Search</span></div>
-    </div>
-    <div class="card">
-      <div class="card-icon">&#128176;</div>
-      <h3>Cortex Analyst (text-to-SQL)</h3>
-      <p>Natural language to SQL via semantic view. 4 verified queries for alert lookup, risk scoring, structuring detection, high-risk wire analysis.</p>
-      <div style="margin-top: 12px;"><span class="tag tag-purple">Analyst</span></div>
-    </div>
-  </div>
-</div>
-
-<!-- SLIDE 7: Guardrails + Governance -->
-<div class="slide" id="slide-7">
-  <div class="slide-number">07 / 08</div>
-  <h2>Guardrails <span class="gradient-text">&amp; Governance</span></h2>
+  <div class="slide-label" style="color: #34d399;">GUARDRAILS &amp; GOVERNANCE</div>
+  <h2 style="margin-top: 20px;">Governed, Trustworthy <span class="gradient-text">AI Behavior</span></h2>
   <div class="two-col" style="flex: 1;">
     <div>
-      <h3 style="color: #34d399; margin-bottom: 20px;">AI Guardrails</h3>
+      <h3 style="color: #34d399; margin-bottom: 16px;">AI Safety Guardrails</h3>
       <div class="guardrail-item">
         <div class="guardrail-icon">&#128274;</div>
-        <div><strong>Input Validation</strong><p style="font-size: 13px; color: #94a3b8;">SQL injection blocking (DROP, DELETE, TRUNCATE), query length limits (1000 chars)</p></div>
+        <div><strong>Input Validation</strong><p style="font-size: 12px; color: #94a3b8;">Blocks SQL injection (DROP, DELETE, TRUNCATE), enforces 1000-char limit</p></div>
       </div>
       <div class="guardrail-item">
         <div class="guardrail-icon">&#127919;</div>
-        <div><strong>Topic Relevance</strong><p style="font-size: 13px; color: #94a3b8;">Warns when questions are outside risk/fraud/compliance domain</p></div>
+        <div><strong>Topic Relevance Check</strong><p style="font-size: 12px; color: #94a3b8;">Warns when questions fall outside risk/fraud/compliance domain</p></div>
       </div>
       <div class="guardrail-item">
         <div class="guardrail-icon">&#128200;</div>
-        <div><strong>Confidence Scoring</strong><p style="font-size: 13px; color: #94a3b8;">HIGH/MEDIUM/LOW confidence based on regulatory citation count in response</p></div>
+        <div><strong>Confidence Scoring</strong><p style="font-size: 12px; color: #94a3b8;">HIGH/MEDIUM/LOW based on regulatory citation count in LLM response</p></div>
       </div>
       <div class="guardrail-item">
         <div class="guardrail-icon">&#128214;</div>
-        <div><strong>RAG Grounding</strong><p style="font-size: 13px; color: #94a3b8;">LLM instructed to use ONLY provided regulatory context, flag uncertainty</p></div>
+        <div><strong>RAG Grounding</strong><p style="font-size: 12px; color: #94a3b8;">LLM uses ONLY provided regulatory context. Flags uncertainty explicitly.</p></div>
       </div>
       <div class="guardrail-item">
         <div class="guardrail-icon">&#9888;</div>
-        <div><strong>Low Confidence Warning</strong><p style="font-size: 13px; color: #94a3b8;">Yellow warning when response lacks citations: "verify against source documents"</p></div>
+        <div><strong>Low Confidence Warning</strong><p style="font-size: 12px; color: #94a3b8;">User warned to "verify against source documents" when citations are sparse</p></div>
       </div>
       <div class="guardrail-item">
         <div class="guardrail-icon">&#128736;</div>
-        <div><strong>Error Handling</strong><p style="font-size: 13px; color: #94a3b8;">Graceful fallback on Cortex API errors with user-friendly messages</p></div>
+        <div><strong>Graceful Error Handling</strong><p style="font-size: 12px; color: #94a3b8;">Cortex API failures return user-friendly messages, never raw stack traces</p></div>
       </div>
     </div>
     <div>
-      <h3 style="color: #a855f7; margin-bottom: 20px;">Data Governance</h3>
-      <div class="card" style="margin-bottom: 16px;">
-        <h3>RBAC Roles</h3>
-        <p><strong style="color: #38bdf8;">RISK_ANALYST</strong> &mdash; Full investigate + generate evidence</p>
-        <p><strong style="color: #a855f7;">RISK_AUDITOR</strong> &mdash; Read-only access to all data + audit trail</p>
+      <h3 style="color: #a855f7; margin-bottom: 16px;">Data Governance</h3>
+      <div class="card" style="margin-bottom: 12px;">
+        <h3 style="font-size: 15px;">RBAC &mdash; Role-Based Access</h3>
+        <p><span style="color: #38bdf8; font-weight: 600;">RISK_ANALYST</span> &mdash; Investigate, generate evidence, update alerts</p>
+        <p><span style="color: #a855f7; font-weight: 600;">RISK_AUDITOR</span> &mdash; Read-only access to all data + full audit trail</p>
       </div>
-      <div class="card" style="margin-bottom: 16px;">
-        <h3>PII Protection</h3>
-        <p><strong>Dynamic Masking:</strong> PII_MASK policy on FULL_NAME, EMAIL, PHONE</p>
-        <p><strong>Semantic Tags:</strong> SNOWFLAKE.CORE.SEMANTIC_CATEGORY on all PII columns</p>
-        <p style="margin-top: 8px; color: #f87171;">RISK_AUDITOR sees: ***MASKED***</p>
+      <div class="card" style="margin-bottom: 12px;">
+        <h3 style="font-size: 15px;">PII Protection</h3>
+        <p><strong>Dynamic Masking:</strong> PII_MASK policy on name, email, phone, address</p>
+        <p><strong>Semantic Tags:</strong> SNOWFLAKE.CORE.SEMANTIC_CATEGORY applied to all PII columns</p>
+        <p style="margin-top: 6px; color: #f87171; font-size: 12px;">RISK_AUDITOR role sees: ***MASKED***</p>
       </div>
-      <div class="card" style="margin-bottom: 16px;">
-        <h3>Audit Trail</h3>
-        <p>COPILOT_AUDIT_LOG captures every AI interaction: action type, alert ID, query, RAG context, LLM response, user, timestamp</p>
+      <div class="card" style="margin-bottom: 12px;">
+        <h3 style="font-size: 15px;">Complete Audit Trail</h3>
+        <p>Every AI interaction logged: action type, alert ID, user query, RAG context retrieved, full LLM response, user identity, timestamp</p>
       </div>
       <div class="card">
-        <h3>Human-in-the-Loop</h3>
-        <p>Internal policy requires all AI-generated content reviewed by human investigator before SAR filing</p>
+        <h3 style="font-size: 15px;">Human-in-the-Loop Policy</h3>
+        <p>Internal risk policy mandates: AI outputs are advisory only. Human investigator must review and approve before SAR filing.</p>
       </div>
     </div>
   </div>
 </div>
 
-<!-- SLIDE 8: CoCo Usage + Summary -->
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SLIDE 7: IMPACT STATEMENT                       -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="slide" id="slide-7">
+  <div class="slide-number">07 / 08</div>
+  <div class="slide-label" style="color: #38bdf8;">IMPACT STATEMENT</div>
+  <h2 style="margin-top: 20px;">Measurable Impact <span class="gradient-text">&amp; Scalability</span></h2>
+  <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
+    <div class="card-grid card-grid-4" style="flex: 0;">
+      <div class="card" style="text-align: center;">
+        <div class="stat-number" style="font-size: 36px; color: #38bdf8;">85%</div>
+        <div class="stat-label">Faster Investigation</div>
+        <p style="font-size: 11px; margin-top: 4px;">4-8 hours &#10132; 30-45 minutes per alert with AI-generated evidence</p>
+      </div>
+      <div class="card" style="text-align: center;">
+        <div class="stat-number" style="font-size: 36px; color: #34d399;">100%</div>
+        <div class="stat-label">Audit Coverage</div>
+        <p style="font-size: 11px; margin-top: 4px;">Every AI interaction logged with full context for regulatory review</p>
+      </div>
+      <div class="card" style="text-align: center;">
+        <div class="stat-number" style="font-size: 36px; color: #a855f7;">5x</div>
+        <div class="stat-label">More Alerts Processed</div>
+        <p style="font-size: 11px; margin-top: 4px;">Same team can handle 5x alert volume with AI-assisted triage</p>
+      </div>
+      <div class="card" style="text-align: center;">
+        <div class="stat-number" style="font-size: 36px; color: #fb923c;">0</div>
+        <div class="stat-label">Data Movement</div>
+        <p style="font-size: 11px; margin-top: 4px;">Everything runs natively in Snowflake. No ETL to external AI services.</p>
+      </div>
+    </div>
+
+    <h3 style="color: #94a3b8; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Before vs After</h3>
+    <div class="card" style="padding: 0 20px;">
+      <div class="impact-row">
+        <div class="impact-before">Manual regulatory document search (30+ min)</div>
+        <div class="impact-arrow">&#10132;</div>
+        <div class="impact-after">Instant RAG-powered policy lookup with citations</div>
+      </div>
+      <div class="impact-row">
+        <div class="impact-before">Copy-paste evidence from 5+ systems into Word doc</div>
+        <div class="impact-arrow">&#10132;</div>
+        <div class="impact-after">One-click structured evidence report with regulatory basis</div>
+      </div>
+      <div class="impact-row">
+        <div class="impact-before">No audit trail for AI-assisted decisions</div>
+        <div class="impact-arrow">&#10132;</div>
+        <div class="impact-after">Full explainability: query + context + response logged</div>
+      </div>
+      <div class="impact-row" style="border-bottom: none;">
+        <div class="impact-before">Siloed tools: email, spreadsheets, document folders</div>
+        <div class="impact-arrow">&#10132;</div>
+        <div class="impact-after">5 unified surfaces: Streamlit, Agent, CoCo, MCP, Slack</div>
+      </div>
+    </div>
+
+    <h3 style="color: #94a3b8; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px;">Scalability &amp; Extensibility</h3>
+    <div class="card-grid card-grid-3" style="flex: 0;">
+      <div class="card">
+        <h3 style="font-size: 14px;">Production Scale</h3>
+        <p>Dynamic tables + scheduled tasks handle millions of transactions. Same pipeline works at 50 or 50M rows.</p>
+      </div>
+      <div class="card">
+        <h3 style="font-size: 14px;">New Regulations</h3>
+        <p>Add new regulatory documents to the corpus &mdash; AI_EXTRACT + AI_CLASSIFY auto-process and Cortex Search auto-indexes.</p>
+      </div>
+      <div class="card">
+        <h3 style="font-size: 14px;">Single-Script Deploy</h3>
+        <p>deploy_all.sql deploys to any Snowflake account. No git clone, no infrastructure. Paste and run.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SLIDE 8: COCO USAGE + THANK YOU                 -->
+<!-- ═══════════════════════════════════════════════ -->
 <div class="slide" id="slide-8" style="background: radial-gradient(ellipse at 30% 80%, rgba(56,189,248,0.06), transparent 60%), radial-gradient(ellipse at 70% 20%, rgba(168,85,247,0.06), transparent 60%);">
   <div class="slide-number">08 / 08</div>
-  <h2>Built <span class="gradient-text">100% with CoCo</span></h2>
-  <div style="flex: 1; display: flex; flex-direction: column; gap: 20px;">
+  <div class="slide-label" style="color: #34d399;">COCO USAGE &amp; SUMMARY</div>
+  <h2 style="margin-top: 20px;">Built <span class="gradient-text">100% with CoCo Desktop</span></h2>
+  <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
     <div class="card-grid card-grid-4" style="flex: 0;">
       <div class="card" style="text-align: center;">
-        <div style="font-size: 28px; margin-bottom: 8px;">&#128196;</div>
-        <h3>Planning</h3>
-        <p>Architecture design, data model, ontology drafted in CoCo</p>
+        <div style="font-size: 26px; margin-bottom: 6px;">&#128196;</div>
+        <h3 style="font-size: 14px;">Planning</h3>
+        <p style="font-size: 12px;">Data model, ontology, workflow design all drafted in CoCo</p>
       </div>
       <div class="card" style="text-align: center;">
-        <div style="font-size: 28px; margin-bottom: 8px;">&#128187;</div>
-        <h3>Development</h3>
-        <p>All SQL, Python, YAML authored via CoCo Desktop</p>
+        <div style="font-size: 26px; margin-bottom: 6px;">&#128187;</div>
+        <h3 style="font-size: 14px;">Development</h3>
+        <p style="font-size: 12px;">All SQL, Python, YAML authored and iterated in CoCo Desktop</p>
       </div>
       <div class="card" style="text-align: center;">
-        <div style="font-size: 28px; margin-bottom: 8px;">&#9889;</div>
-        <h3>Execution</h3>
-        <p>SQL run, app deployed, tasks scheduled through CoCo</p>
+        <div style="font-size: 26px; margin-bottom: 6px;">&#9889;</div>
+        <h3 style="font-size: 14px;">Execution</h3>
+        <p style="font-size: 12px;">SQL run, app deployed, tasks scheduled, agents created via CoCo</p>
       </div>
       <div class="card" style="text-align: center;">
-        <div style="font-size: 28px; margin-bottom: 8px;">&#10004;</div>
-        <h3>Testing</h3>
-        <p>8 validation tests + guardrail checks via CoCo</p>
+        <div style="font-size: 26px; margin-bottom: 6px;">&#10004;</div>
+        <h3 style="font-size: 14px;">Testing</h3>
+        <p style="font-size: 12px;">8 validation tests + guardrail checks executed through CoCo</p>
       </div>
     </div>
-    <div class="card-grid card-grid-4" style="flex: 0;">
-      <div class="card" style="text-align: center;">
-        <div class="stat-number" style="font-size: 36px; color: #38bdf8;">33</div>
-        <div class="stat-label">Snowflake Objects</div>
-      </div>
-      <div class="card" style="text-align: center;">
-        <div class="stat-number" style="font-size: 36px; color: #a855f7;">3</div>
-        <div class="stat-label">Cortex Agents</div>
-      </div>
-      <div class="card" style="text-align: center;">
-        <div class="stat-number" style="font-size: 36px; color: #34d399;">5</div>
-        <div class="stat-label">Access Surfaces</div>
-      </div>
-      <div class="card" style="text-align: center;">
-        <div class="stat-number" style="font-size: 36px; color: #fb923c;">6</div>
-        <div class="stat-label">Fraud Patterns</div>
-      </div>
-    </div>
-    <div class="card" style="text-align: center; padding: 20px;">
-      <h3 style="margin-bottom: 12px;">Hackathon Checklist &mdash; All Complete</h3>
-      <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+
+    <div class="card" style="text-align: center; padding: 16px;">
+      <h3 style="font-size: 14px; margin-bottom: 10px;">Hackathon Criteria &mdash; All Complete</h3>
+      <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
         <span class="tag tag-green">Synthetic Data</span>
         <span class="tag tag-green">Data Pipeline</span>
         <span class="tag tag-green">Semantic Model</span>
@@ -494,11 +563,28 @@
         <span class="tag tag-green">Slack Bot</span>
       </div>
     </div>
+
+    <div class="card-grid card-grid-4" style="flex: 0;">
+      <div class="card" style="text-align: center;">
+        <div class="stat-number" style="font-size: 32px; color: #38bdf8;">33</div><div class="stat-label">Snowflake Objects</div>
+      </div>
+      <div class="card" style="text-align: center;">
+        <div class="stat-number" style="font-size: 32px; color: #a855f7;">3</div><div class="stat-label">Cortex Agents</div>
+      </div>
+      <div class="card" style="text-align: center;">
+        <div class="stat-number" style="font-size: 32px; color: #34d399;">5</div><div class="stat-label">Access Surfaces</div>
+      </div>
+      <div class="card" style="text-align: center;">
+        <div class="stat-number" style="font-size: 32px; color: #fb923c;">6</div><div class="stat-label">Cortex AI Functions</div>
+      </div>
+    </div>
+
     <div style="text-align: center; margin-top: auto;">
-      <p style="font-size: 16px; color: #94a3b8;">
+      <h3 style="font-size: 18px; margin-bottom: 8px;">Thank You</h3>
+      <p style="font-size: 14px; color: #94a3b8;">
         GitHub: <strong style="color: #e2e8f0;">github.com/rdevath21/risk-fraud-regulatory-intelligence-copilot</strong>
       </p>
-      <p style="font-size: 14px; color: #64748b; margin-top: 8px;">Single-script deployment available: deploy/deploy_all.sql</p>
+      <p style="font-size: 13px; color: #64748b; margin-top: 6px;">Single-script deployment: deploy/deploy_all.sql &nbsp;|&nbsp; Streamlit: RISK_COPILOT.PUBLIC.RISK_FRAUD_COPILOT</p>
     </div>
   </div>
 </div>
@@ -527,7 +613,6 @@
   function nextSlide() { if (current < totalSlides) showSlide(current + 1); }
   function prevSlide() { if (current > 1) showSlide(current - 1); }
 
-  // Build dots
   const dotsContainer = document.getElementById('dots');
   for (let i = 1; i <= totalSlides; i++) {
     const dot = document.createElement('div');
@@ -536,7 +621,6 @@
     dotsContainer.appendChild(dot);
   }
 
-  // Keyboard navigation
   document.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
     if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
