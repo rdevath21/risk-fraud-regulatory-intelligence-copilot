@@ -12,6 +12,11 @@
       "name": "risk-copilot-investigate",
       "description": "Investigate a customer or alert using the Risk Copilot. Queries transaction data, retrieves regulatory context via RAG, and generates an AI-powered evidence report with citations.",
       "path": "skills/risk-copilot-investigate.md"
+    },
+    {
+      "name": "risk-copilot-orchestrate",
+      "description": "Multi-agent orchestration workflow. Coordinates 3 specialized Cortex Agents (Risk Triage, Regulatory Compliance, Risk Intelligence) to investigate an alert end-to-end with clear handoffs between agents.",
+      "path": "skills/risk-copilot-orchestrate.md"
     }
   ]
 }

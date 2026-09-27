@@ -291,14 +291,54 @@ risk-fraud-regulatory-intelligence-copilot/
 
 ---
 
+## Multi-Agent Orchestration
+
+Three specialized Cortex Agents, each with a distinct role, coordinated through a CoCo skill (`/risk-copilot-orchestrate`):
+
+```
+User: "Investigate alert ALT-007 for layering"
+         |
+         v
+  RISK_TRIAGE_AGENT (Step 1: Data Screening)
+  Tool: cortex_analyst_text_to_sql only
+  Role: Pull alert details, customer profile, transactions, risk scores
+  Output: Triage summary with data context
+         |
+         v  (handoff: triage context)
+  REGULATORY_COMPLIANCE_AGENT (Step 2: Policy Lookup)
+  Tool: cortex_search only
+  Role: Find applicable AML/CFT regs, filing requirements, SLA rules
+  Output: Regulatory citations and policy sections
+         |
+         v  (handoff: triage + regulatory context)
+  RISK_INTELLIGENCE_AGENT (Step 3: Synthesis)
+  Tools: Both cortex_analyst + cortex_search
+  Role: Synthesize data + regulations into final evidence report
+  Output: Complete investigation report with citations
+         |
+         v
+  Audit Log Entry Created
+```
+
+| Agent | Snowflake Object | Tool | Specialization |
+|-------|-----------------|------|---------------|
+| Risk Triage | `RISK_TRIAGE_AGENT` | `cortex_analyst_text_to_sql` | Data queries, pattern detection, alert screening |
+| Regulatory Compliance | `REGULATORY_COMPLIANCE_AGENT` | `cortex_search` | Policy lookup, regulatory citations, filing rules |
+| Risk Intelligence | `RISK_INTELLIGENCE_AGENT` | Both tools | Orchestration, synthesis, evidence report generation |
+
+All 3 agents are also accessible independently in Snowsight (AI & ML > Cortex Agents).
+
+---
+
 ## Reusable CoCo Skill
 
-The `skill/` directory contains a **reusable, shareable CoCo plugin** with two skills:
+The `skill/` directory contains a **reusable, shareable CoCo plugin** with three skills:
 
 | Skill | Command | What It Does |
 |-------|---------|-------------|
 | `risk-copilot-deploy` | `/risk-copilot-deploy` | Deploys the entire copilot to any Snowflake account end-to-end |
 | `risk-copilot-investigate` | `/risk-copilot-investigate` | Investigates an alert or customer with AI-powered evidence generation |
+| `risk-copilot-orchestrate` | `/risk-copilot-orchestrate` | **Multi-agent orchestration**: coordinates 3 specialized agents with clear handoffs |
 
 **Install in CoCo Desktop:**
 ```bash
