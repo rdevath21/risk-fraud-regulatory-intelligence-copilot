@@ -970,12 +970,12 @@ elif page == "System Health":
     # Cortex Agent
     st.markdown('<div class="section-header"><h3>Cortex Agent & MCP</h3></div>', unsafe_allow_html=True)
     try:
-        agent_check = run_query("SHOW CORTEX AGENTS LIKE 'RISK_INTELLIGENCE_AGENT' IN SCHEMA RISK_COPILOT.PUBLIC")
+        agent_check = run_query("SHOW AGENTS LIKE 'RISK_INTELLIGENCE_AGENT' IN SCHEMA RISK_COPILOT.PUBLIC")
         agent_exists = len(agent_check) > 0
     except Exception:
         agent_exists = False
     try:
-        mcp_check = run_query("SHOW CORTEX MCP SERVERS LIKE 'RISK_COPILOT_MCP_SERVER' IN SCHEMA RISK_COPILOT.PUBLIC")
+        mcp_check = run_query("SHOW MCP SERVERS LIKE 'RISK_COPILOT_MCP_SERVER' IN SCHEMA RISK_COPILOT.PUBLIC")
         mcp_exists = len(mcp_check) > 0
     except Exception:
         mcp_exists = False
