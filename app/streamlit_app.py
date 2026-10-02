@@ -143,20 +143,36 @@ def run_query_safe(sql, default=None):
         return default if default is not None else pd.DataFrame()
 
 def search_regulatory_docs(query, limit=3):
-    import _snowflake
-    result = _snowflake.send_snow_api_request(
-        "POST",
-        f"/api/v2/databases/RISK_COPILOT/schemas/PUBLIC/cortex-search-services/REGULATORY_SEARCH_SERVICE:query",
-        {},
-        {},
-        json.dumps({"query": query, "columns": ["CHUNK_TEXT", "DOC_NAME"], "limit": limit}),
-        {},
-        30000,
-    )
-    if result["status"] == 200:
-        body = json.loads(result["content"])
-        return body.get("results", [])
-    return []
+    try:
+        escaped = query.replace("'", "''")
+        result = run_query(f"""
+            SELECT PARSE_JSON(
+                SNOWFLAKE.CORTEX.SEARCH_PREVIEW(
+                    'RISK_COPILOT.PUBLIC.REGULATORY_SEARCH_SERVICE',
+                    '{{"query": "{escaped}", "columns": ["CHUNK_TEXT", "DOC_NAME"], "limit": {limit}}}'
+                )
+            ):results AS RESULTS
+        """)
+        if len(result) > 0 and result["RESULTS"].iloc[0] is not None:
+            results_json = json.loads(str(result["RESULTS"].iloc[0]))
+            if isinstance(results_json, list):
+                return results_json
+        return []
+    except Exception:
+        try:
+            escaped = query.replace("'", "''")
+            fallback = run_query(f"""
+                SELECT CHUNK_TEXT, DOC_NAME
+                FROM RISK_COPILOT.PUBLIC.REGULATORY_CHUNKS
+                ORDER BY VECTOR_COSINE_SIMILARITY(
+                    CHUNK_EMBEDDING,
+                    SNOWFLAKE.CORTEX.EMBED_TEXT_768('e5-base-v2', '{escaped}')
+                ) DESC
+                LIMIT {limit}
+            """)
+            return [{"CHUNK_TEXT": row["CHUNK_TEXT"], "DOC_NAME": row["DOC_NAME"]} for _, row in fallback.iterrows()]
+        except Exception:
+            return []
 
 def call_llm(prompt, model="llama3.1-70b"):
     try:
