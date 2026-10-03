@@ -12,56 +12,17 @@ A risk analyst opens the Streamlit copilot, sees flagged alerts (structuring, la
 
 ## Architecture
 
-```
-+---------------------------------------------------------------------+
-|                        CORTEX CODE (CoCo)                           |
-|  Orchestrates everything: data gen, pipelines, app, tests, deploy   |
-+---------------------------------------------------------------------+
-        |               |               |               |
-        v               v               v               v
-+-------------+  +-------------+  +-------------+  +-------------+
-|  SYNTHETIC  |  |     RAG     |  |  DETECTION  |  |  SCHEDULED  |
-|    DATA     |  |  PIPELINE   |  |    LAYER    |  | AUTOMATION  |
-| 20 customers|  | 18 doc      |  | 4 detection |  | Stream +    |
-| 50 txns     |  |   chunks    |  |   views     |  |  2 tasks    |
-| 10 alerts   |  | Embeddings  |  | Semantic    |  | Dynamic     |
-| 6 fraud     |  |   (768-dim) |  |   View + 4  |  |   table     |
-|   patterns  |  | Cortex      |  |   verified  |  | 15-min auto |
-|             |  |   Search    |  |   queries   |  |   alerts    |
-+------+------+  +------+------+  +------+------+  +------+------+
-       |                |                |                |
-       +--------+-------+--------+-------+--------+-------+
-                |                |                |
-                v                v                v
-+---------------------------------------------------------------------+
-|                    SNOWFLAKE CORTEX AI ENGINE                       |
-|                                                                     |
-|  CORTEX.COMPLETE     CORTEX.EMBED_TEXT_768    CORTEX SEARCH SERVICE |
-|  (llama3.1-70b)      (e5-base-v2)             (hybrid retrieval)   |
-|  Evidence reports     Vector embeddings        Semantic + keyword   |
-|  Regulatory Q&A       for RAG pipeline         search over docs    |
-+---------------------------------------------------------------------+
-                |                                      |
-                v                                      v
-+-----------------------------------+  +-----------------------------------+
-|   STREAMLIT-IN-SNOWFLAKE APP      |  |   MCP CONNECTOR (CoCo Plugin)    |
-|                                   |  |                                   |
-|   Page 1: Risk Dashboard          |  |   Filesystem MCP server           |
-|   Page 2: Transaction Investigation|  |   Exports evidence reports        |
-|   Page 3: Regulatory Chat (RAG)   |  |   to local reports/ directory     |
-|   Page 4: Audit Trail             |  |   for compliance archival         |
-+-----------------------------------+  +-----------------------------------+
-                |                                      |
-                v                                      v
-+---------------------------------------------------------------------+
-|                     GOVERNANCE LAYER                                |
-|                                                                     |
-|   RBAC: RISK_ANALYST + RISK_AUDITOR roles                          |
-|   PII Masking: name, email, phone, address                         |
-|   Object Tags: SNOWFLAKE.CORE.SEMANTIC_CATEGORY                    |
-|   Audit Log: every AI interaction recorded                         |
-+---------------------------------------------------------------------+
-```
+![Risk, Fraud & Regulatory Intelligence Copilot - Architecture](images/architecture_diagram.jpg)
+
+**Three-layer architecture built entirely on Snowflake's native AI stack:**
+
+| Layer | Schema | Components |
+|-------|--------|------------|
+| **Data Ingestion & Engineering** | RAW / TRANSFORM | 4 source tables, 6 Dynamic Tables (1-min lag), 9 fraud pattern detectors |
+| **Intelligence & Agent Layer** | SEMANTIC / CORTEX | Unified Semantic View (16 dimensions), Cortex Search RAG pipeline, 3 specialized Cortex Agents with multi-agent orchestration |
+| **Application Delivery Surfaces** | PUBLIC | Streamlit Enterprise App, Native Cortex Agents, Slack Bot, MCP Server, CoCo CLI |
+
+**Governance sidebar** spans all layers: RBAC & Data Privacy, Immutable AI Audit Trails, AI Safety Guardrails, Measurable Business Impact (85% faster investigation, 5x throughput).
 
 ---
 
@@ -284,6 +245,9 @@ risk-fraud-regulatory-intelligence-copilot/
 |
 |-- reports/                           # Evidence output (MCP target)
 |   |-- evidence_ALT-001.txt           #   Sample AI-generated investigation report
+|
+|-- images/
+|   |-- architecture_diagram.jpg      #   System architecture diagram
 |
 |-- .gitignore
 |-- README.md
