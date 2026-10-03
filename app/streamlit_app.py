@@ -857,8 +857,16 @@ elif page == "System Health":
     inv_data = {}
     inv_data["Tables (RAW)"] = run_query_safe("SELECT COUNT(*) AS C FROM RISK_COPILOT.INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'RAW' AND TABLE_TYPE = 'BASE TABLE'", pd.DataFrame({"C": [0]}))["C"].iloc[0]
     inv_data["Dynamic Tables"] = run_query_safe("SELECT COUNT(*) AS C FROM RISK_COPILOT.INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'TRANSFORM'", pd.DataFrame({"C": [0]}))["C"].iloc[0]
-    inv_data["Semantic Views"] = run_query_safe("SELECT COUNT(*) AS C FROM RISK_COPILOT.INFORMATION_SCHEMA.VIEWS WHERE TABLE_SCHEMA = 'SEMANTIC'", pd.DataFrame({"C": [0]}))["C"].iloc[0]
-    inv_data["Streams"] = run_query_safe("SELECT COUNT(*) AS C FROM RISK_COPILOT.INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'RAW' AND TABLE_TYPE LIKE '%STREAM%'", pd.DataFrame({"C": [0]}))["C"].iloc[0]
+    try:
+        sv_result = run_query("SHOW SEMANTIC VIEWS IN SCHEMA RISK_COPILOT.SEMANTIC")
+        inv_data["Semantic Views"] = len(sv_result)
+    except Exception:
+        inv_data["Semantic Views"] = 0
+    try:
+        str_result = run_query("SHOW STREAMS IN DATABASE RISK_COPILOT")
+        inv_data["Streams"] = len(str_result)
+    except Exception:
+        inv_data["Streams"] = 0
 
     inv_cols = st.columns(4)
     colors = ["kpi-blue", "kpi-purple", "kpi-green", "kpi-orange"]
@@ -1012,3 +1020,109 @@ elif page == "System Health":
             </div>
         </div>
         """, unsafe_allow_html=True)
+
+    # AI Guardrails
+    st.markdown('<div class="section-header"><h3>AI Guardrails & Safety Controls</h3></div>', unsafe_allow_html=True)
+    st.caption("Multi-layer guardrail pipeline applied to every AI interaction in this copilot.")
+
+    guardrails = [
+        {
+            "name": "Input Validation",
+            "status": "ACTIVE",
+            "layer": "Pre-LLM",
+            "icon": "🛡️",
+            "desc": "Blocks SQL injection keywords (DROP, DELETE, TRUNCATE, etc.) and enforces max query length.",
+            "details": f"Blocked keywords: {len(BLOCKED_KEYWORDS)} | Max query length: {MAX_QUERY_LENGTH} chars"
+        },
+        {
+            "name": "Topic Relevance Filter",
+            "status": "ACTIVE",
+            "layer": "Pre-LLM",
+            "icon": "🎯",
+            "desc": "Ensures user queries are related to risk, fraud, AML, or compliance topics before invoking the LLM.",
+            "details": f"Allowed topics: {len(ALLOWED_TOPICS)} domains (risk, fraud, AML, compliance, KYC, PEP, Basel, etc.)"
+        },
+        {
+            "name": "RAG Grounding Check",
+            "status": "ACTIVE",
+            "layer": "Pre-LLM",
+            "icon": "📎",
+            "desc": "Verifies that Cortex Search returns relevant regulatory sources before generating a response. Falls back to vector similarity if search fails.",
+            "details": "Min sources required: 1 | Retrieval: Cortex Search + vector cosine fallback"
+        },
+        {
+            "name": "Confidence Scoring",
+            "status": "ACTIVE",
+            "layer": "Post-LLM",
+            "icon": "📊",
+            "desc": "Evaluates LLM output for regulatory citation density and assigns HIGH / MEDIUM / LOW confidence.",
+            "details": "HIGH: 2+ citations | MEDIUM: 1 citation | LOW: no citations or hedging language"
+        },
+        {
+            "name": "Output Validation",
+            "status": "ACTIVE",
+            "layer": "Post-LLM",
+            "icon": "✅",
+            "desc": "Checks response length, detects low-confidence phrases ('I cannot', 'not found'), and flags unreliable answers.",
+            "details": "Min response length: 20 chars | Danger phrases monitored: 5"
+        },
+        {
+            "name": "Dynamic Data Masking",
+            "status": "ACTIVE",
+            "layer": "Data Layer",
+            "icon": "🔒",
+            "desc": "PII masking policy on SSN/Tax ID fields — only RISK_ANALYST and RISK_AUDITOR roles see full values.",
+            "details": "Policy: PII_MASK | Applied to: CUSTOMERS.SSN_LAST4, RISK_SCORES"
+        },
+        {
+            "name": "Audit Logging",
+            "status": "ACTIVE",
+            "layer": "Post-LLM",
+            "icon": "📝",
+            "desc": "Every AI interaction (query, response, confidence, source count) is logged to COPILOT_AUDIT_LOG for compliance.",
+            "details": "Fields: USER, QUERY, RESPONSE, SOURCES_USED, CONFIDENCE, TIMESTAMP"
+        }
+    ]
+
+    for g in guardrails:
+        layer_color = "#3182CE" if g["layer"] == "Pre-LLM" else "#38A169" if g["layer"] == "Post-LLM" else "#805AD5"
+        st.markdown(f"""
+        <div class="info-card" style="border-left: 4px solid {layer_color};">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <span style="font-size:1.1rem;">{g['icon']}</span>
+                    <strong style="margin-left:0.3rem;">{g['name']}</strong>
+                    <span style="background:{layer_color}; color:white; padding:2px 8px; border-radius:10px; font-size:0.7rem; margin-left:0.5rem;">{g['layer']}</span>
+                </div>
+                <span class="health-ok">{g['status']}</span>
+            </div>
+            <div style="font-size:0.85rem; color:#4A5568; margin-top:0.4rem;">{g['desc']}</div>
+            <div style="font-size:0.75rem; color:#718096; margin-top:0.2rem; font-family:monospace;">{g['details']}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown(f"""
+    <div class="info-card" style="background: linear-gradient(135deg, #EBF8FF 0%, #F0FFF4 100%);">
+        <div style="text-align:center;">
+            <strong style="font-size:1rem;">Guardrail Pipeline Summary</strong>
+            <div style="display:flex; justify-content:space-around; margin-top:0.8rem;">
+                <div>
+                    <div style="font-size:1.5rem; font-weight:700; color:#3182CE;">{len(guardrails)}</div>
+                    <div style="font-size:0.75rem; color:#718096;">Total Controls</div>
+                </div>
+                <div>
+                    <div style="font-size:1.5rem; font-weight:700; color:#3182CE;">{sum(1 for g in guardrails if g['layer'] == 'Pre-LLM')}</div>
+                    <div style="font-size:0.75rem; color:#718096;">Pre-LLM Gates</div>
+                </div>
+                <div>
+                    <div style="font-size:1.5rem; font-weight:700; color:#38A169;">{sum(1 for g in guardrails if g['layer'] == 'Post-LLM')}</div>
+                    <div style="font-size:0.75rem; color:#718096;">Post-LLM Checks</div>
+                </div>
+                <div>
+                    <div style="font-size:1.5rem; font-weight:700; color:#805AD5;">{sum(1 for g in guardrails if g['layer'] == 'Data Layer')}</div>
+                    <div style="font-size:0.75rem; color:#718096;">Data Layer</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)

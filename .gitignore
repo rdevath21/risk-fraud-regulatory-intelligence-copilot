@@ -3,3 +3,11 @@
 *.pyc
 __pycache__/
 .snowflake/
+risk-copilot-clone/
+~$*.pptx
+*.b64
+*_b64.txt
+b64_*.txt
+chunk*.txt
+sql_chunk_*.sql
+insert_app.sql

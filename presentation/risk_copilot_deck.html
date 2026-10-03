@@ -104,7 +104,7 @@
       <span>MCP Server</span>
       <span>Cortex Agents</span>
     </div>
-    <p style="margin-top: 30px; color: #64748b; font-size: 13px;">Built end-to-end with CoCo Desktop &nbsp;|&nbsp; 33 Snowflake Objects &nbsp;|&nbsp; 3 Cortex Agents &nbsp;|&nbsp; 5 Access Surfaces</p>
+    <p style="margin-top: 30px; color: #64748b; font-size: 13px;">Built end-to-end with CoCo Desktop &nbsp;|&nbsp; 40+ Snowflake Objects &nbsp;|&nbsp; 3 Cortex Agents &nbsp;|&nbsp; 5 Access Surfaces</p>
     <p style="margin-top: 10px; color: #475569; font-size: 13px;">GitHub: github.com/rdevath21/risk-fraud-regulatory-intelligence-copilot</p>
   </div>
 </div>
@@ -208,7 +208,7 @@
       <div style="display: flex; justify-content: space-between; align-items: center;">
         <div>
           <h3 style="color: #a855f7; margin-bottom: 2px; font-size: 16px;">SEMANTIC Schema &mdash; Intelligence Layer</h3>
-          <p style="font-size: 12px; color: #94a3b8;">Semantic view (16 dimensions, 4 metrics, 4 VQs) + RAG search + AI_EXTRACT + AI_CLASSIFY.</p>
+          <p style="font-size: 12px; color: #94a3b8;">Semantic view (16 dimensions, 4 metrics, 4 VQRs) + RAG search (18 chunks) + Cortex Search.</p>
         </div>
         <div style="display: flex; gap: 8px;">
           <span class="tag tag-purple" style="font-size: 10px;">SV_RISK_INTELLIGENCE</span>
@@ -242,10 +242,10 @@
         <div class="stat-number" style="font-size: 28px; color: #38bdf8;">6</div><div class="stat-label">Dynamic Tables</div>
       </div>
       <div class="card" style="text-align: center; padding: 12px 20px;">
-        <div class="stat-number" style="font-size: 28px; color: #a855f7;">6</div><div class="stat-label">Cortex AI Functions</div>
+        <div class="stat-number" style="font-size: 28px; color: #a855f7;">7</div><div class="stat-label">Guardrail Checks</div>
       </div>
       <div class="card" style="text-align: center; padding: 12px 20px;">
-        <div class="stat-number" style="font-size: 28px; color: #34d399;">33</div><div class="stat-label">Total Objects</div>
+        <div class="stat-number" style="font-size: 28px; color: #34d399;">40+</div><div class="stat-label">Total Objects</div>
       </div>
     </div>
   </div>
@@ -370,14 +370,17 @@
     </div>
   </div>
   <div class="card" style="margin-top: 16px; padding: 14px 20px;">
-    <h3 style="font-size: 14px; margin-bottom: 8px; color: #94a3b8;">6 Fraud Patterns Detected</h3>
-    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+    <h3 style="font-size: 14px; margin-bottom: 8px; color: #94a3b8;">9 Fraud &amp; Risk Patterns Detected</h3>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
       <span class="tag tag-white">Structuring (sub-$10k deposits)</span>
       <span class="tag tag-white">Layering (multi-jurisdiction)</span>
       <span class="tag tag-white">Round-Tripping (circular flows)</span>
       <span class="tag tag-white">Velocity Anomaly (burst activity)</span>
       <span class="tag tag-white">Dormant Reactivation</span>
       <span class="tag tag-white">Shell Company Activity</span>
+      <span class="tag tag-white">KYC Expired Activity</span>
+      <span class="tag tag-white">PEP Large Transactions</span>
+      <span class="tag tag-white">Mule Account Indicators</span>
     </div>
   </div>
 </div>
@@ -394,11 +397,11 @@
       <h3 style="color: #34d399; margin-bottom: 16px;">AI Safety Guardrails</h3>
       <div class="guardrail-item">
         <div class="guardrail-icon">&#128274;</div>
-        <div><strong>Input Validation</strong><p style="font-size: 12px; color: #94a3b8;">Blocks SQL injection (DROP, DELETE, TRUNCATE), enforces 1000-char limit</p></div>
+        <div><strong>Input Validation</strong><p style="font-size: 12px; color: #94a3b8;">Blocks 11 SQL injection patterns (DROP, DELETE, TRUNCATE, MERGE, etc.), enforces 1000-char limit</p></div>
       </div>
       <div class="guardrail-item">
         <div class="guardrail-icon">&#127919;</div>
-        <div><strong>Topic Relevance Check</strong><p style="font-size: 12px; color: #94a3b8;">Warns when questions fall outside risk/fraud/compliance domain</p></div>
+        <div><strong>Topic Relevance Check</strong><p style="font-size: 12px; color: #94a3b8;">Restricts to 20+ allowed topics (risk, fraud, AML, compliance, KYC, PEP, Basel, etc.)</p></div>
       </div>
       <div class="guardrail-item">
         <div class="guardrail-icon">&#128200;</div>
@@ -410,7 +413,11 @@
       </div>
       <div class="guardrail-item">
         <div class="guardrail-icon">&#9888;</div>
-        <div><strong>Low Confidence Warning</strong><p style="font-size: 12px; color: #94a3b8;">User warned to "verify against source documents" when citations are sparse</p></div>
+        <div><strong>Output Validation</strong><p style="font-size: 12px; color: #94a3b8;">Detects low-confidence phrases, missing citations, short responses. Warns user to verify.</p></div>
+      </div>
+      <div class="guardrail-item">
+        <div class="guardrail-icon">&#128683;</div>
+        <div><strong>Blocked Keywords</strong><p style="font-size: 12px; color: #94a3b8;">11 dangerous SQL patterns blocked at input layer (INSERT, UPDATE, MERGE, DROP, etc.)</p></div>
       </div>
       <div class="guardrail-item">
         <div class="guardrail-icon">&#128736;</div>
@@ -549,24 +556,24 @@
     <div class="card" style="text-align: center; padding: 16px;">
       <h3 style="font-size: 14px; margin-bottom: 10px;">Hackathon Criteria &mdash; All Complete</h3>
       <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
-        <span class="tag tag-green">Synthetic Data</span>
-        <span class="tag tag-green">Data Pipeline</span>
-        <span class="tag tag-green">Semantic Model</span>
-        <span class="tag tag-green">Streamlit App</span>
-        <span class="tag tag-green">MCP Connectors</span>
+        <span class="tag tag-green">Synthetic Data (20 customers, 50 txns)</span>
+        <span class="tag tag-green">Data Pipeline (6 DTs, 3 tasks)</span>
+        <span class="tag tag-green">Semantic View (4 VQRs)</span>
+        <span class="tag tag-green">Streamlit App (5 pages)</span>
+        <span class="tag tag-green">MCP Server</span>
         <span class="tag tag-green">Document Processing</span>
-        <span class="tag tag-green">Reusable Skills</span>
-        <span class="tag tag-green">Automations</span>
-        <span class="tag tag-green">Multi-Agent</span>
-        <span class="tag tag-green">Multi-Surface</span>
-        <span class="tag tag-green">Guardrails</span>
+        <span class="tag tag-green">Reusable Skills (3)</span>
+        <span class="tag tag-green">Automations (3 tasks)</span>
+        <span class="tag tag-green">Multi-Agent (3 agents)</span>
+        <span class="tag tag-green">Multi-Surface (5)</span>
+        <span class="tag tag-green">AI Guardrails (7 checks)</span>
         <span class="tag tag-green">Slack Bot</span>
       </div>
     </div>
 
     <div class="card-grid card-grid-4" style="flex: 0;">
       <div class="card" style="text-align: center;">
-        <div class="stat-number" style="font-size: 32px; color: #38bdf8;">33</div><div class="stat-label">Snowflake Objects</div>
+        <div class="stat-number" style="font-size: 32px; color: #38bdf8;">40+</div><div class="stat-label">Snowflake Objects</div>
       </div>
       <div class="card" style="text-align: center;">
         <div class="stat-number" style="font-size: 32px; color: #a855f7;">3</div><div class="stat-label">Cortex Agents</div>
@@ -575,7 +582,7 @@
         <div class="stat-number" style="font-size: 32px; color: #34d399;">5</div><div class="stat-label">Access Surfaces</div>
       </div>
       <div class="card" style="text-align: center;">
-        <div class="stat-number" style="font-size: 32px; color: #fb923c;">6</div><div class="stat-label">Cortex AI Functions</div>
+        <div class="stat-number" style="font-size: 32px; color: #fb923c;">7</div><div class="stat-label">Guardrail Checks</div>
       </div>
     </div>
 
@@ -584,7 +591,7 @@
       <p style="font-size: 14px; color: #94a3b8;">
         GitHub: <strong style="color: #e2e8f0;">github.com/rdevath21/risk-fraud-regulatory-intelligence-copilot</strong>
       </p>
-      <p style="font-size: 13px; color: #64748b; margin-top: 6px;">Single-script deployment: deploy/deploy_all.sql &nbsp;|&nbsp; Streamlit: RISK_COPILOT.PUBLIC.RISK_FRAUD_COPILOT</p>
+      <p style="font-size: 13px; color: #64748b; margin-top: 6px;">Single-script deployment: deploy/deploy_all.sql &nbsp;|&nbsp; Verified on 2 Snowflake accounts &nbsp;|&nbsp; Streamlit: RISK_FRAUD_COPILOT</p>
     </div>
   </div>
 </div>
